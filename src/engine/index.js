@@ -8,29 +8,12 @@
 import { loadLevels, normalizeLevel } from './loader.js'
 import testLevelFixture from '../fixtures/test-level.json'
 import * as sim from '../quantum/sim.js'
+import { checkTarget } from './targets/index.js'
 
 export { loadLevels, normalizeLevel }
 
-// Target checkers map
-const targetModules = import.meta.glob('./targets/*.js', { eager: true })
 
-function getChecker(type) {
-  if (type) {
-    for (const [path, mod] of Object.entries(targetModules)) {
-      if (path.endsWith(`/${type}.js`) || path.endsWith(`\\${type}.js`)) {
-        const checker = mod && (mod.check ? mod : mod.default)
-        if (checker && typeof checker.check === 'function') {
-          return checker
-        }
-      }
-    }
-  }
 
-  // TODO: Replace with real checker from src/engine/targets/<type>.js once implemented by Role 1
-  return {
-    check: (_level, _context, _answer) => ({ ok: true, detail: 'stub' }),
-  }
-}
 
 export const PROGRESS_STORAGE_KEY = 'quriosity_progress'
 
@@ -100,6 +83,8 @@ export function createEngine(options = {}) {
   let quantumState = createInitialStateForLevel(currentLevel)
   let dial = currentLevel.mode === 'dial' ? { tDegrees: currentLevel.start?.t || 0 } : null
   let tally = { ud: [0, 0], side: [0, 0] }
+  let lastLens = null
+  let sent = false
   let moveLog = []
   let moveCount = 0
   let failureCount = 0
@@ -130,9 +115,9 @@ export function createEngine(options = {}) {
     const meters =
       currentLevel.mode === 'dial' && currentLevel.target?.type === 'optimise'
         ? {
-            ud: sim.sureness(quantumState, 'A', 'ud'),
-            side: sim.sureness(quantumState, 'A', 'side'),
-          }
+          ud: sim.sureness(quantumState, 'A', 'ud'),
+          side: sim.sureness(quantumState, 'A', 'side'),
+        }
         : null
 
     return {
@@ -206,6 +191,8 @@ export function createEngine(options = {}) {
     status = 'playing'
     feedback = { kind: null, text: '' }
     score = null
+    lastLens = null
+    sent = false
   }
 
   function applyTool(name, qubit) {
@@ -254,7 +241,10 @@ export function createEngine(options = {}) {
       (val, i) => Math.abs(val - newState[i]) < 1e-9
     )
 
-    if (lightsUnchanged || stateUnchanged) {
+    const unchanged =
+      currentLevel.mode === 'pair' ? lightsUnchanged : stateUnchanged
+
+    if (unchanged) {
       const noChangeText =
         currentLevel.events?.['no-visible-change'] || 'This move causes no visible change.'
       feedback = { kind: 'info', text: noChangeText }
@@ -262,7 +252,6 @@ export function createEngine(options = {}) {
       feedback = { kind: null, text: '' }
     }
 
-    checkHints()
     renderState = buildRenderState()
     notify()
   }
@@ -277,6 +266,7 @@ export function createEngine(options = {}) {
 
     const targetQubit = qubit || (currentPhase === 'bob' ? 'B' : 'A')
     const targetLens = lens || 'ud'
+    lastLens = targetLens
     const rng = sim.makeRng(Date.now())
 
     let res
@@ -311,6 +301,7 @@ export function createEngine(options = {}) {
   }
 
   function send() {
+    sent = true
     currentPhase = 'transit'
     renderState = buildRenderState()
     notify()
@@ -324,9 +315,9 @@ export function createEngine(options = {}) {
         quantumState = sim.applyX(quantumState, 'A')
       } else if (road === 'Z' || road === 'TWIST') {
         quantumState = sim.applyZ(quantumState, 'A')
-      } else if (road === 'XZ') {
-        quantumState = sim.applyZ(quantumState, 'A')
+      } else if (road === 'XZ' || road === 'ZX') {
         quantumState = sim.applyX(quantumState, 'A')
+        quantumState = sim.applyZ(quantumState, 'A')
       }
     }
     renderState = buildRenderState()
@@ -335,22 +326,39 @@ export function createEngine(options = {}) {
 
   function submit(answer = {}) {
     const targetType = currentLevel.target?.type || 'message'
-    const checker = getChecker(targetType)
 
     const context = {
       state: [...quantumState],
-      phase: currentPhase,
-      lights: sim.pairFacts(quantumState),
-      entanglement: sim.entanglement(quantumState),
-      dial: dial ? { ...dial } : null,
-      moveCount,
-      failureCount,
+      dialT: dial ? dial.tDegrees : null,
+      lens: lastLens,
+      tally: { ud: [...tally.ud], side: [...tally.side] },
+      sent,
     }
 
-    const result = checker.check(currentLevel, context, answer)
+    const injected =
+      (options.checkers && options.checkers[targetType]) || options.checker || null
+    const result = injected
+      ? injected.check(currentLevel, context, answer)
+      : checkTarget(targetType, currentLevel, context, answer)
+
 
     if (result.ok) {
+
       status = 'won'
+      if (targetType === 'budget' && Array.isArray(answer?.plan)) {
+        const plan = answer.plan
+        const totalBits = (currentLevel.extra?.messages || []).reduce(
+          (n, m) => n + m.bits.length,
+          0
+        )
+        score = {
+          bitsPerParcel: plan.length ? totalBits / plan.length : 0,
+          parcelsUsed: plan.length,
+          twinsLeft:
+            (currentLevel.extra?.budget?.twins ?? 0) -
+            plan.filter((p) => p.useTwin).length,
+        }
+      }
       stars =
         moveCount <= currentLevel.par
           ? 3
