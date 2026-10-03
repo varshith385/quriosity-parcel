@@ -1,0 +1,53 @@
+{
+  "id": 18,
+  "act": 5,
+  "tier": 3,
+  "title": "The spy",
+  "mode": "post",
+  "newWords": [],
+  "tools": [],
+  "lenses": [
+    "ud",
+    "side"
+  ],
+  "lockedQubits": [],
+  "start": {
+    "kind": "pair",
+    "t": 0
+  },
+  "phases": [
+    "alice",
+    "transit"
+  ],
+  "transit": {
+    "spy": true,
+    "road": null
+  },
+  "target": {
+    "type": "compare",
+    "expected": "same"
+  },
+  "par": 2,
+  "goalLine": "Compare what the spy sees across the messages.",
+  "hints": [
+    {
+      "afterFailures": 3,
+      "text": "Send each message and keep a tally of what the spy sees."
+    },
+    {
+      "afterFailures": 5,
+      "text": "Does the pattern change from one message to the next?"
+    }
+  ],
+  "events": {},
+  "extra": {
+    "spyMessages": [
+      "00",
+      "01",
+      "10",
+      "11"
+    ]
+  },
+  "physicsCheck": "check-03",
+  "removePhysicsNote": "Without the pair, the stolen parcel would carry a pattern that depends on the message, so the tallies would differ."
+}
