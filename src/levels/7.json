@@ -1,0 +1,80 @@
+{
+  "id": 7,
+  "act": 2,
+  "tier": 2,
+  "title": "Two moves",
+  "mode": "dial",
+  "newWords": [],
+  "tools": [
+    "flip",
+    "twist"
+  ],
+  "lenses": [
+    "ud",
+    "side"
+  ],
+  "lockedQubits": [],
+  "start": {
+    "kind": "dial",
+    "t": 0
+  },
+  "phases": [
+    "alice"
+  ],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "readings"
+  },
+  "par": 4,
+  "goalLine": "Hit each target reading by making moves visible in that lens.",
+  "hints": [
+    {
+      "afterFailures": 2,
+      "text": "Flip alters the up-down reading; twist alters the sideways reading."
+    },
+    {
+      "afterFailures": 4,
+      "text": "Twist is invisible in the up-down lens; flip is invisible in the sideways lens."
+    }
+  ],
+  "events": {
+    "no-visible-change": "Twist on an up-down reading shows no change."
+  },
+  "extra": {
+    "targetReadings": [
+      {
+        "id": "r1",
+        "lens": "ud",
+        "outcome": 1,
+        "startT": 0,
+        "moves": ["flip"]
+      },
+      {
+        "id": "r2",
+        "lens": "side",
+        "outcome": 1,
+        "startT": 90,
+        "moves": ["twist"]
+      },
+      {
+        "id": "r3",
+        "lens": "ud",
+        "outcome": 0,
+        "startT": 180,
+        "moves": ["flip"]
+      },
+      {
+        "id": "r4",
+        "lens": "side",
+        "outcome": 0,
+        "startT": 270,
+        "moves": ["twist"]
+      }
+    ]
+  },
+  "physicsCheck": "check-07",
+  "removePhysicsNote": "Without different lenses, a move would either change everything or change nothing."
+}
