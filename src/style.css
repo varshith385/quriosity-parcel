@@ -1599,3 +1599,32 @@ body {
     flex-direction: column;
   }
 }
+
+/* Table general styles */
+.row-selects {
+  display: flex;
+  gap: 1rem;
+}
+
+.cell-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cell-label {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+@media (max-width: 390px) {
+  .table-row-l13, .table-row-l15 {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .row-selects {
+    flex-direction: column;
+  }
+}

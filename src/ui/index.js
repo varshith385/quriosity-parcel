@@ -792,9 +792,18 @@ export function mountUI(root, initialEngine) {
 
         const selects = els.tableBody.querySelectorAll("select")
         const cells = {}
-        selects.forEach(select => {
-          cells[select.dataset.id] = select.value
-        })
+
+        if (currentTableLevelId === 15) {
+          selects.forEach(select => {
+            const [rowId, colId] = select.dataset.id.split('.')
+            if (!cells[rowId]) cells[rowId] = {}
+            cells[rowId][colId] = select.value
+          })
+        } else {
+          selects.forEach(select => {
+            cells[select.dataset.id] = select.value
+          })
+        }
 
         currentEngine.submit({ cells })
       })
@@ -1031,42 +1040,88 @@ export function mountUI(root, initialEngine) {
 
     function renderTable(state) {
       const extra = state.extra || {}
-      const tableData = extra.factTable || extra.codebook
-      if (!tableData || tableData.length === 0) return
+
+      const isLevel13 = state.levelId === 13
+      const isLevel15 = state.levelId === 15
+
+      let hasData = false
+      if (isLevel13 && extra.rows && extra.columns && extra.options) hasData = true
+
+      let codebookRows = []
+      if (isLevel15) {
+        if (Array.isArray(extra.codebook)) codebookRows = extra.codebook
+        else if (extra.codebook && Array.isArray(extra.codebook.rows)) codebookRows = extra.codebook.rows
+        if (codebookRows.length > 0) hasData = true
+      }
+
+      if (!hasData) {
+        if (isLevel13 && extra.factTable) hasData = true
+        else return
+      }
 
       if (els.tableSection) els.tableSection.hidden = false
-      if (els.tableTitle) els.tableTitle.textContent = extra.factTable ? "Fact Table" : "Codebook"
+      if (els.tableTitle) els.tableTitle.textContent = isLevel13 ? "Fact Table" : "Codebook"
 
       if (currentTableLevelId !== state.levelId) {
         currentTableLevelId = state.levelId
         if (els.tableBody) {
           let html = ""
-          const isFact = !!extra.factTable
-          tableData.forEach(row => {
-            let optionsHtml = `<option value="">-- select --</option>`
-            if (isFact) {
-              optionsHtml += `
-                <option value="agree">Agree</option>
-                <option value="differ">Differ</option>
-                <option value="random">Random</option>
-              `
-            } else {
-              optionsHtml += `
-                <option value="00">00 (Agree, Agree)</option>
-                <option value="01">01 (Agree, Differ)</option>
-                <option value="10">10 (Differ, Agree)</option>
-                <option value="11">11 (Differ, Differ)</option>
-              `
+
+          if (isLevel13) {
+            if (extra.rows && extra.columns && extra.options) {
+              const optionsHtml = `<option value="">-- select --</option>` + extra.options.map(opt => `<option value="${opt}">${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`).join("")
+
+              extra.rows.forEach(row => {
+                html += `<div class="table-row table-row-l13">
+                  <label class="row-label">${row.label}</label>
+                  <div class="row-selects">`
+                extra.columns.forEach(col => {
+                  html += `<div class="cell-block">
+                    <span class="cell-label">${col.label}</span>
+                    <select class="row-select" data-id="${row.id}.${col.id}">${optionsHtml}</select>
+                  </div>`
+                })
+                html += `</div></div>`
+              })
+            } else if (extra.factTable) {
+              extra.factTable.forEach(row => {
+                let optionsHtml = `<option value="">-- select --</option><option value="agree">Agree</option><option value="differ">Differ</option><option value="random">Random</option>`
+                html += `
+                  <div class="table-row">
+                    <label class="row-label" for="select-${row.id}">${row.label}</label>
+                    <select class="row-select" id="select-${row.id}" data-id="${row.id}">
+                      ${optionsHtml}
+                    </select>
+                  </div>
+                `
+              })
             }
-            html += `
-              <div class="table-row">
-                <label class="row-label" for="select-${row.id}">${row.label}</label>
-                <select class="row-select" id="select-${row.id}" data-id="${row.id}">
-                  ${optionsHtml}
-                </select>
-              </div>
-            `
-          })
+          } else if (isLevel15) {
+            codebookRows.forEach(row => {
+              let label = ""
+              if (row.moves !== undefined) {
+                if (row.moves.length === 0) label = "Nothing"
+                else label = row.moves.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(" then ")
+              } else {
+                label = row.label
+              }
+
+              const optionsHtml = `<option value="">-- select --</option><option value="agree">Agree</option><option value="differ">Differ</option>`
+              html += `<div class="table-row table-row-l15">
+                <label class="row-label">${label}</label>
+                <div class="row-selects">
+                  <div class="cell-block">
+                    <span class="cell-label">Colour light</span>
+                    <select class="row-select" data-id="${row.id}.zz">${optionsHtml}</select>
+                  </div>
+                  <div class="cell-block">
+                    <span class="cell-label">Shape light</span>
+                    <select class="row-select" data-id="${row.id}.xx">${optionsHtml}</select>
+                  </div>
+                </div>
+              </div>`
+            })
+          }
           els.tableBody.innerHTML = html
         }
       }

@@ -49,19 +49,26 @@ export function createFakeEngine(initialOverrides = {}) {
   }
 
   if (levelId === 13) {
-    state.extra.factTable = [
-      { id: "ud", label: "When both are read up-down..." },
-      { id: "side", label: "When both are read sideways..." }
+    state.extra.rows = [
+      { id: "ud", label: "Up-down lens" },
+      { id: "side", label: "Sideways lens" }
     ]
+    state.extra.columns = [
+      { id: "alone", label: "One twin alone" },
+      { id: "together", label: "Twins compared" }
+    ]
+    state.extra.options = ["random", "agree", "differ"]
     state.extra.control = false
     state.lenses = ["ud", "side"]
   } else if (levelId === 15) {
-    state.extra.codebook = [
-      { id: "I", label: "Nothing" },
-      { id: "X", label: "Flip" },
-      { id: "Z", label: "Twist" },
-      { id: "XZ", label: "Twist then Flip" }
-    ]
+    state.extra.codebook = {
+      rows: [
+        { id: "nothing", moves: [] },
+        { id: "flip", moves: ["flip"] },
+        { id: "twist", moves: ["twist"] },
+        { id: "both", moves: ["twist", "flip"] }
+      ]
+    }
     state.lenses = ["ud"]
   } else if (levelId === 14) {
     state.lenses = ["ud", "side"]
@@ -285,22 +292,34 @@ export function createFakeEngine(initialOverrides = {}) {
 
   function submit(answer) {
     if (state.levelId === 13) {
-      if (answer && answer.cells && answer.cells.ud === "agree" && answer.cells.side === "agree") {
+      const c = answer && answer.cells
+      const correct = c
+        && c["ud.alone"] === "random"
+        && c["ud.together"] === "agree"
+        && c["side.alone"] === "random"
+        && c["side.together"] === "agree"
+      if (correct) {
         state.status = "won"
         state.stars = 3
         state.feedback = { kind: "info", text: "Correct! Twins always agree when read in the same lens." }
       } else {
         state.failureCount = (state.failureCount || 0) + 1
-        state.feedback = { kind: "blocked", text: "Not quite right. Look at the tally again." }
+        state.feedback = { kind: "hint", text: "Not quite right. Try again!" }
       }
     } else if (state.levelId === 15) {
-      if (answer && answer.cells && answer.cells.I === "00" && answer.cells.X === "01" && answer.cells.Z === "10" && answer.cells.XZ === "11") {
+      const c = answer && answer.cells
+      const correct = c
+        && c.nothing && c.nothing.zz === "agree" && c.nothing.xx === "agree"
+        && c.flip && c.flip.zz === "differ" && c.flip.xx === "agree"
+        && c.twist && c.twist.zz === "agree" && c.twist.xx === "differ"
+        && c.both && c.both.zz === "differ" && c.both.xx === "differ"
+      if (correct) {
         state.status = "won"
         state.stars = 3
         state.feedback = { kind: "info", text: "Codebook complete!" }
       } else {
         state.failureCount = (state.failureCount || 0) + 1
-        state.feedback = { kind: "blocked", text: "Some patterns are wrong." }
+        state.feedback = { kind: "hint", text: "Not quite right. Try again!" }
       }
     } else if (state.levelId === 20) {
       if (answer && answer.plan) {
