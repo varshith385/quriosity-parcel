@@ -1,0 +1,53 @@
+{
+  "levelId": 14,
+  "title": "One-hand writing",
+  "goalLine": "Make the lights match the message.",
+  "mode": "pair",
+  "tier": 1,
+  "newWords": ["flip", "twist"],
+  "target": {
+    "type": "message",
+    "bits": "10"
+  },
+  "phase": "alice",
+  "state": [0.7071067811865475, 0, 0, 0.7071067811865475],
+  "dial": null,
+  "toolsAvailable": ["flip", "twist"],
+  "lenses": ["ud"],
+  "lockedQubits": ["B"],
+  "thread": true,
+  "lights": {
+    "zz": "agree",
+    "xx": "agree"
+  },
+  "meters": null,
+  "tally": null,
+  "moveLog": [],
+  "moveCount": 0,
+  "failureCount": 0,
+  "par": 2,
+  "stars": 0,
+  "extra": {},
+  "status": "playing",
+  "feedback": {
+    "kind": null,
+    "text": ""
+  },
+  "score": null,
+  "progress": {
+    "completedIds": [1, 2, 3, 4, 5, 7, 8, 9, 11, 12, 13],
+    "starsById": {
+      "1": 3,
+      "2": 3,
+      "3": 3,
+      "4": 3,
+      "5": 3,
+      "7": 2,
+      "8": 3,
+      "9": 3,
+      "11": 3,
+      "12": 3,
+      "13": 2
+    }
+  }
+}
