@@ -44,6 +44,7 @@ describe('Game Engine (src/engine/index.js)', () => {
       'feedback',
       'score',
       'progress',
+      'levels',
     ]
 
     expect(Object.keys(state)).toHaveLength(expectedKeys.length)
