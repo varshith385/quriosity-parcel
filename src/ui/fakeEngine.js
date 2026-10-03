@@ -45,6 +45,14 @@ export function createFakeEngine(initialOverrides = {}) {
       completedIds: [],
       starsById: {}
     },
+    levels: [
+      { id: 12, title: "Make twins", tier: 1 },
+      { id: 13, title: "Twins' facts", tier: 1 },
+      { id: 14, title: "One-hand writing", tier: 1 },
+      { id: 15, title: "Your own codebook", tier: 1 },
+      { id: 16, title: "Unmake", tier: 1 },
+      { id: 20, title: "Network Plan", tier: 2 }
+    ],
     ...initialOverrides
   }
 
@@ -406,12 +414,21 @@ export function createFakeEngine(initialOverrides = {}) {
     notify()
   }
 
+  function selectLevel(id) {
+    const fresh = createFakeEngine({ levelId: id, progress: state.progress })
+    state = fresh.getRenderState()
+    unmade = false
+    l16Tools = []
+    notify()
+  }
+
   return {
     applyTool,
     look,
     submit,
     getRenderState,
     subscribe,
-    reset
+    reset,
+    selectLevel
   }
 }
