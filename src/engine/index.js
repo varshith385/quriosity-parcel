@@ -1,14 +1,36 @@
 /**
  * src/engine/index.js - Game Engine for Quriosity Parcel
- * Implements engine contract from section 3.3 and render state from section 3.4.
- * Uses loadLevels to load levels from src/levels/*.json.
- * Contains NO physics formulas - delegates quantum operations to src/quantum/sim.js.
+ * Full implementation conforming to sections 3.3 and 3.4 of ROLES.md.
+ * State is plain JSON and rebuilt after every action.
+ * Physics operations are delegated strictly to src/quantum/sim.js (no formulas here).
  */
 
 import { loadLevels, normalizeLevel } from './loader.js'
+import testLevelFixture from '../fixtures/test-level.json'
 import * as sim from '../quantum/sim.js'
 
 export { loadLevels, normalizeLevel }
+
+// Target checkers map
+const targetModules = import.meta.glob('./targets/*.js', { eager: true })
+
+function getChecker(type) {
+  if (type) {
+    for (const [path, mod] of Object.entries(targetModules)) {
+      if (path.endsWith(`/${type}.js`) || path.endsWith(`\\${type}.js`)) {
+        const checker = mod && (mod.check ? mod : mod.default)
+        if (checker && typeof checker.check === 'function') {
+          return checker
+        }
+      }
+    }
+  }
+
+  // TODO: Replace with real checker from src/engine/targets/<type>.js once implemented by Role 1
+  return {
+    check: (_level, _context, _answer) => ({ ok: true, detail: 'stub' }),
+  }
+}
 
 function safeLoadProgress() {
   try {
@@ -21,7 +43,7 @@ function safeLoadProgress() {
       }
     }
   } catch (err) {
-    // localStorage may be disabled or blocked
+    // localStorage may be disabled or blocked in certain environments
   }
   return { completedIds: [], starsById: {} }
 }
@@ -36,25 +58,6 @@ function safeSaveProgress(progress) {
   }
 }
 
-function createFallbackLevel() {
-  return normalizeLevel({
-    id: 1,
-    title: 'One slot',
-    goalLine: 'Send a 1-bit message.',
-    mode: 'post',
-    tier: 3,
-    newWords: [],
-    tools: [],
-    lenses: ['ud'],
-    lockedQubits: [],
-    start: { kind: 'zero', t: 0 },
-    phases: ['alice'],
-    transit: { spy: false, road: null },
-    target: { type: 'message', bits: '1' },
-    par: 1,
-  })
-}
-
 function createInitialStateForLevel(level) {
   if (level.start?.kind === 'pair') {
     return sim.makePair()
@@ -66,10 +69,13 @@ function createInitialStateForLevel(level) {
 }
 
 export function createEngine(options = {}) {
-  const loadedLevels = options.levels || loadLevels()
-  const fallbackLevel = createFallbackLevel()
-  const levels = loadedLevels.length > 0 ? loadedLevels : [fallbackLevel]
+  let loadedLevels = options.levels
+  if (!loadedLevels || loadedLevels.length === 0) {
+    const fromLoader = loadLevels()
+    loadedLevels = fromLoader.length > 0 ? fromLoader : [normalizeLevel(testLevelFixture)]
+  }
 
+  const levels = loadedLevels
   let currentLevel = levels[0]
   let currentPhase = currentLevel.phases[0] || 'alice'
   let quantumState = createInitialStateForLevel(currentLevel)
@@ -86,7 +92,16 @@ export function createEngine(options = {}) {
 
   const listeners = new Set()
 
-  function getRenderState() {
+  function checkHints() {
+    if (currentLevel.hints && Array.isArray(currentLevel.hints)) {
+      const hint = currentLevel.hints.find((h) => failureCount >= h.afterFailures)
+      if (hint && status === 'playing' && feedback.kind !== 'blocked') {
+        feedback = { kind: 'hint', text: hint.text }
+      }
+    }
+  }
+
+  function buildRenderState() {
     const thread = sim.entanglement(quantumState) > 0.99
     const lights = currentLevel.mode === 'pair' ? sim.pairFacts(quantumState) : null
     const meters =
@@ -131,11 +146,17 @@ export function createEngine(options = {}) {
     }
   }
 
+  let renderState = buildRenderState()
+
+  function getRenderState() {
+    return JSON.parse(JSON.stringify(renderState))
+  }
+
   function notify() {
-    const currentState = getRenderState()
+    const current = getRenderState()
     for (const listener of listeners) {
       try {
-        listener(currentState)
+        listener(current)
       } catch (err) {
         console.error('Engine subscriber error:', err)
       }
@@ -165,12 +186,13 @@ export function createEngine(options = {}) {
   }
 
   function applyTool(name, qubit) {
-    // Check if qubit is locked
     if (qubit && currentLevel.lockedQubits.includes(qubit)) {
       failureCount++
       const blockedText =
-        currentLevel.events?.['tool-blocked'] || `Qubit ${qubit} is locked.`
+        currentLevel.events?.['tool-blocked'] || `Bob's twin is locked.`
       feedback = { kind: 'blocked', text: blockedText }
+      checkHints()
+      renderState = buildRenderState()
       notify()
       return
     }
@@ -192,6 +214,8 @@ export function createEngine(options = {}) {
       quantumState = sim.applyH(quantumState, 'A')
     }
 
+    checkHints()
+    renderState = buildRenderState()
     notify()
   }
 
@@ -200,44 +224,108 @@ export function createEngine(options = {}) {
     const targetLens = lens || 'ud'
     const rng = sim.makeRng(Date.now())
 
-    let result
+    let res
     if (targetLens === 'side') {
-      result = sim.measureSideways(quantumState, targetQubit, rng)
+      res = sim.measureSideways(quantumState, targetQubit, rng)
     } else {
-      result = sim.measure(quantumState, targetQubit, rng)
+      res = sim.measure(quantumState, targetQubit, rng)
     }
 
-    quantumState = result.state
-    const outcomeIndex = result.outcome === 1 || result.outcome === '-' ? 1 : 0
+    quantumState = res.state
+    const outcomeIndex = res.outcome === 1 || res.outcome === '-' ? 1 : 0
     const lensKey = targetLens === 'side' ? 'side' : 'ud'
     tally[lensKey][outcomeIndex]++
 
+    renderState = buildRenderState()
     notify()
   }
 
   function setDial(tDegrees) {
     dial = { tDegrees }
     quantumState = sim.dialState(tDegrees)
+    renderState = buildRenderState()
     notify()
   }
 
   function send() {
     currentPhase = 'transit'
+    renderState = buildRenderState()
     notify()
   }
 
   function deliver() {
     currentPhase = 'bob'
+    if (currentLevel.transit?.road) {
+      const road = currentLevel.transit.road
+      if (road === 'X' || road === 'flip') {
+        quantumState = sim.applyX(quantumState, 'A')
+      } else if (road === 'Z' || road === 'twist') {
+        quantumState = sim.applyZ(quantumState, 'A')
+      } else if (road === 'XZ') {
+        quantumState = sim.applyZ(quantumState, 'A')
+        quantumState = sim.applyX(quantumState, 'A')
+      }
+    }
+    renderState = buildRenderState()
     notify()
   }
 
-  function submit(answer) {
+  function submit(answer = {}) {
+    const targetType = currentLevel.target?.type || 'message'
+    const checker = getChecker(targetType)
+
+    const context = {
+      state: [...quantumState],
+      phase: currentPhase,
+      lights: sim.pairFacts(quantumState),
+      entanglement: sim.entanglement(quantumState),
+      dial: dial ? { ...dial } : null,
+      moveCount,
+      failureCount,
+    }
+
+    const result = checker.check(currentLevel, context, answer)
+
+    if (result.ok) {
+      status = 'won'
+      stars =
+        moveCount <= currentLevel.par
+          ? 3
+          : moveCount <= currentLevel.par * 2
+            ? 2
+            : 1
+      if (!progress.completedIds.includes(currentLevel.id)) {
+        progress.completedIds.push(currentLevel.id)
+      }
+      progress.starsById[currentLevel.id] = Math.max(
+        progress.starsById[currentLevel.id] || 0,
+        stars
+      )
+      safeSaveProgress(progress)
+      feedback = {
+        kind: 'info',
+        text: result.detail || currentLevel.events?.win || 'Goal reached!',
+      }
+    } else {
+      failureCount++
+      feedback = {
+        kind: 'info',
+        text:
+          result.detail ||
+          currentLevel.events?.['wrong-result'] ||
+          'Not quite right. Try again!',
+      }
+      checkHints()
+    }
+
+    renderState = buildRenderState()
     notify()
-    return { ok: true, detail: '' }
+    return result
   }
 
   function reset() {
     resetLevelState(currentLevel)
+    renderState = buildRenderState()
     notify()
   }
 
@@ -248,6 +336,7 @@ export function createEngine(options = {}) {
     } else {
       resetLevelState(currentLevel)
     }
+    renderState = buildRenderState()
     notify()
   }
 
@@ -258,6 +347,7 @@ export function createEngine(options = {}) {
     } else {
       console.warn(`Level ${id} not found in available levels.`)
     }
+    renderState = buildRenderState()
     notify()
   }
 
