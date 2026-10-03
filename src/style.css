@@ -1053,25 +1053,38 @@ body {
   align-items: center;
   text-align: center;
   background: #082f49;
-  border: 1px solid #0284c7;
+  border: 2px solid #0284c7;
   border-radius: var(--radius-sm);
-  padding: 0.35rem 0.45rem;
+  padding: 0.5rem 0.6rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .thread-icon {
-  font-size: 1rem;
+  font-size: 1.25rem;
   color: #38bdf8;
 }
 
 .thread-text {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #7dd3fc;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #bae6fd;
   line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.thread-disabled {
+.thread-disabled .thread-beam {
   opacity: 0.2;
+}
+.thread-disabled .thread-badge {
+  background: #1e293b;
+  border-color: #475569;
+}
+.thread-disabled .thread-icon {
+  color: #94a3b8;
+}
+.thread-disabled .thread-text {
+  color: #cbd5e1;
 }
 
 /* ==========================================================================

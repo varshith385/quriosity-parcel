@@ -58,9 +58,13 @@ describe('FakeEngine for Level 14', () => {
     expect(state.moveLog).toEqual(['twist'])
 
     // Target 10 is reached because Shape(xx) = differ ("1") and Colour(zz) = agree ("0")
-    expect(state.status).toBe('won')
-    expect(state.stars).toBeGreaterThan(0)
-    expect(state.feedback.text).toContain('Target 10 reached')
+    // In the updated logic, we must submit to win.
+    expect(state.status).toBe('playing')
+    engine.submit({})
+    const winState = engine.getRenderState()
+    expect(winState.status).toBe('won')
+    expect(winState.stars).toBeGreaterThan(0)
+    expect(winState.feedback.text).toContain('Target 10 reached')
   })
 
   it('Action on locked Bob twin is blocked and does not change lights', () => {

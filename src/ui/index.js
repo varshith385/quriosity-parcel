@@ -48,7 +48,7 @@ export function mountUI(root, initialEngine) {
         <header class="game-header">
           <div class="header-top-row">
             <div class="level-badge-group">
-              <span class="badge badge-act">ACT 4 · TWINS</span>
+              <span class="badge badge-act" id="header-act-badge">ACT 4 · TWINS</span>
               <span class="badge badge-level" id="header-level-badge">LEVEL 14</span>
               <span class="badge badge-phase" id="header-phase-badge">PHASE: ALICE</span>
             </div>
@@ -86,12 +86,18 @@ export function mountUI(root, initialEngine) {
         <div class="win-banner" id="win-banner" hidden>
           <div class="win-content">
             <div class="win-stars" id="win-stars"></div>
-            <div class="win-text-group">
+            <div class="win-text-group" style="flex-grow: 1;">
               <h2 class="win-title" id="win-title-text"></h2>
               <p class="win-desc" id="win-desc-text"></p>
             </div>
+            <button type="button" class="btn-submit" id="btn-next-level">Next level</button>
           </div>
         </div>
+
+        <!-- CHECK ACTION (Levels 12 & 14) -->
+        <section class="check-section" id="check-section" hidden style="display: flex; justify-content: center; margin-bottom: 1rem;">
+          <button type="button" class="btn-submit" id="check-btn" style="width: 100%; max-width: 400px; padding: 1rem; font-size: 1.25rem;">Check</button>
+        </section>
 
         <!-- FEEDBACK LINE -->
         <section class="feedback-section" aria-live="polite">
@@ -124,7 +130,7 @@ export function mountUI(root, initialEngine) {
                 </div>
                 <div class="light-meta">
                   <h3 class="light-name">Colour Light</h3>
-                  <span class="light-subtext">ZZ Parity · Bit 2 (Flip)</span>
+                  <span class="light-subtext">Bit 2 (Flip)</span>
                 </div>
                 <div class="light-state-badge" id="light-zz-badge">
                   <span class="state-icon" id="light-zz-icon"></span>
@@ -133,7 +139,7 @@ export function mountUI(root, initialEngine) {
               </div>
               <div class="light-explanation" id="light-zz-desc"></div>
               <div class="light-control-tag">
-                Controlled by: <strong>Flip (X)</strong>
+                Controlled by: <strong>Flip</strong>
               </div>
             </div>
 
@@ -146,7 +152,7 @@ export function mountUI(root, initialEngine) {
                 </div>
                 <div class="light-meta">
                   <h3 class="light-name">Shape Light</h3>
-                  <span class="light-subtext">XX Parity · Bit 1 (Twist)</span>
+                  <span class="light-subtext">Bit 1 (Twist)</span>
                 </div>
                 <div class="light-state-badge" id="light-xx-badge">
                   <span class="state-icon" id="light-xx-icon"></span>
@@ -155,7 +161,7 @@ export function mountUI(root, initialEngine) {
               </div>
               <div class="light-explanation" id="light-xx-desc"></div>
               <div class="light-control-tag">
-                Controlled by: <strong>Twist (Z)</strong>
+                Controlled by: <strong>Twist</strong>
               </div>
             </div>
           </div>
@@ -198,33 +204,33 @@ export function mountUI(root, initialEngine) {
               <div class="twin-controls-area" id="alice-controls-area">
                 <span class="controls-label">Alice's Available Actions:</span>
                 <div class="buttons-grid">
-                  <button type="button" class="tool-btn btn-flip" id="btn-flip" aria-label="Apply Flip (X) move to Alice's twin" hidden>
+                  <button type="button" class="tool-btn btn-flip" id="btn-flip" aria-label="Apply Flip move to Alice's twin" hidden>
                     <div class="btn-top">
                       <span class="tool-icon flip-icon" aria-hidden="true">⥯</span>
-                      <span class="tool-name">FLIP (X)</span>
+                      <span class="tool-name">FLIP</span>
                     </div>
-                    <span class="tool-desc">Toggles Colour Light (ZZ)</span>
+                    <span class="tool-desc">Changes the Colour Light</span>
                   </button>
-                  <button type="button" class="tool-btn btn-twist" id="btn-twist" aria-label="Apply Twist (Z) move to Alice's twin" hidden>
+                  <button type="button" class="tool-btn btn-twist" id="btn-twist" aria-label="Apply Twist move to Alice's twin" hidden>
                     <div class="btn-top">
                       <span class="tool-icon twist-icon" aria-hidden="true">⟲</span>
-                      <span class="tool-name">TWIST (Z)</span>
+                      <span class="tool-name">TWIST</span>
                     </div>
-                    <span class="tool-desc">Toggles Shape Light (XX)</span>
+                    <span class="tool-desc">Changes the Shape Light</span>
                   </button>
-                  <button type="button" class="tool-btn btn-lens" id="btn-lens" aria-label="Apply Lens-changer (H) move" hidden>
+                  <button type="button" class="tool-btn btn-lens" id="btn-lens" aria-label="Apply Lens-changer move" hidden>
                     <div class="btn-top">
-                      <span class="tool-icon lens-icon" aria-hidden="true">H</span>
+                      <span class="tool-icon lens-icon" aria-hidden="true"></span>
                       <span class="tool-name">LENS-CHANGER</span>
                     </div>
-                    <span class="tool-desc">Changes perspective</span>
+                    <span class="tool-desc">Acts on one twin</span>
                   </button>
-                  <button type="button" class="tool-btn btn-linker" id="btn-linker" aria-label="Apply Linker (CNOT) move" hidden>
+                  <button type="button" class="tool-btn btn-linker" id="btn-linker" aria-label="Apply Linker move" hidden>
                     <div class="btn-top">
                       <span class="tool-icon linker-icon" aria-hidden="true">🔗</span>
-                      <span class="tool-name">LINKER (CNOT)</span>
+                      <span class="tool-name">LINKER</span>
                     </div>
-                    <span class="tool-desc">Entangles twins</span>
+                    <span class="tool-desc">Acts on both twins</span>
                   </button>
                 </div>
               </div>
@@ -232,7 +238,7 @@ export function mountUI(root, initialEngine) {
           </article>
 
           <!-- QUANTUM ENTANGLEMENT THREAD -->
-          <div class="thread-connector thread-disabled" id="quantum-thread-container" aria-label="Quantum Entanglement Link">
+          <div class="thread-connector thread-disabled" id="quantum-thread-container" aria-label="Link between the twins">
             <div class="thread-beam">
               <div class="thread-node node-left"></div>
               <div class="thread-line" id="thread-line">
@@ -265,11 +271,11 @@ export function mountUI(root, initialEngine) {
                   <div class="lock-scrim-overlay" id="bob-lock-scrim" hidden>
                     <div class="lock-big-badge">
                       <span class="lock-giant-icon" aria-hidden="true">🔒</span>
-                      <span class="lock-banner-text" id="bob-lock-banner">LOCKED IN TRANSIT</span>
+                      <span class="lock-banner-text" id="bob-lock-banner">LOCKED</span>
                     </div>
                     <p class="lock-reason-text" id="bob-lock-reason">
-                      Bob cannot act during encoding.<br>
-                      Bob will receive this twin intact.
+                      Bob's twin is locked.<br>
+                      You can only act on Alice's twin.
                     </p>
                   </div>
                   <div class="parcel-body" id="bob-parcel-body">
@@ -350,6 +356,8 @@ export function mountUI(root, initialEngine) {
             </div>
           </div>
 
+          <p class="planner-rules" style="margin-bottom: 12px; font-size: 0.9em; opacity: 0.9;">A parcel carries 1 bit. With a twin it can carry 2 bits. Each twin can be used once. A parcel carries bits of one message only.</p>
+
           <div class="planner-messages" id="planner-messages">
           </div>
 
@@ -372,8 +380,12 @@ export function mountUI(root, initialEngine) {
     // Element Cache
     const els = {
       levelBadge: container.querySelector("#header-level-badge"),
+      actBadge: container.querySelector("#header-act-badge"),
       phaseBadge: container.querySelector("#header-phase-badge"),
       moves: container.querySelector("#header-moves"),
+      checkSection: container.querySelector("#check-section"),
+      checkBtn: container.querySelector("#check-btn"),
+      btnNextLevel: container.querySelector("#btn-next-level"),
       btnReset: container.querySelector("#btn-reset"),
       title: container.querySelector("#header-title"),
       goal: container.querySelector("#header-goal"),
@@ -533,6 +545,22 @@ export function mountUI(root, initialEngine) {
       })
     }
 
+    if (els.checkBtn) {
+      els.checkBtn.addEventListener("click", () => {
+        if (currentEngine && typeof currentEngine.submit === "function") {
+          currentEngine.submit({})
+        }
+      })
+    }
+
+    if (els.btnNextLevel) {
+      els.btnNextLevel.addEventListener("click", () => {
+        if (currentEngine && typeof currentEngine.nextLevel === "function") {
+          currentEngine.nextLevel()
+        }
+      })
+    }
+
     // Dev selector remount logic
     const devSelect = container.querySelector("#dev-level-select")
     if (devSelect) {
@@ -652,10 +680,25 @@ export function mountUI(root, initialEngine) {
 
       // --- SHARED SHELL ---
       if (els.levelBadge) els.levelBadge.textContent = state.levelId ? `LEVEL ${state.levelId}` : "LEVEL 14"
-      if (els.phaseBadge) els.phaseBadge.textContent = `PHASE: ${(state.phase || "alice").toUpperCase()}`
+
+      const actNum = state.levelId >= 16 ? 5 : 4;
+      const actTitle = state.levelId >= 16 ? "DELIVERY" : "TWINS";
+      if (els.actBadge) els.actBadge.textContent = `ACT ${actNum} · ${actTitle}`;
+
+      if (els.phaseBadge) {
+        if (state.levelId === 20) els.phaseBadge.hidden = true;
+        else {
+          els.phaseBadge.hidden = false;
+          els.phaseBadge.textContent = `PHASE: ${(state.phase || "alice").toUpperCase()}`
+        }
+      }
       if (els.moves) {
-        const parText = state.par !== undefined ? ` / Par: ${state.par}` : ""
-        els.moves.textContent = `Moves: ${state.moveCount || 0}${parText}`
+        if (state.levelId === 20) els.moves.hidden = true;
+        else {
+          els.moves.hidden = false;
+          const parText = state.par !== undefined ? ` / Par: ${state.par}` : ""
+          els.moves.textContent = `Moves: ${state.moveCount || 0}${parText}`
+        }
       }
       if (els.title && state.title) els.title.textContent = state.title
       if (els.goal && state.goalLine) els.goal.textContent = state.goalLine
@@ -679,6 +722,14 @@ export function mountUI(root, initialEngine) {
       if (els.measurementSection) els.measurementSection.hidden = true
       if (els.tableSection) els.tableSection.hidden = true
       if (els.plannerSection) els.plannerSection.hidden = true
+
+      if (els.checkSection) {
+        if ((state.levelId === 12 || state.levelId === 14) && state.status !== "won") {
+          els.checkSection.hidden = false
+        } else {
+          els.checkSection.hidden = true
+        }
+      }
 
       // --- ROUTER ---
       if (state.levelId === 12) {
@@ -755,7 +806,7 @@ export function mountUI(root, initialEngine) {
         if (els.blueprintHeading) els.blueprintHeading.textContent = "Codebook Light Pattern"
         if (els.blueprintCaption) els.blueprintCaption.hidden = true
       } else {
-        if (els.blueprintHeading) els.blueprintHeading.textContent = "Pair Facts (Global Measurement)"
+        if (els.blueprintHeading) els.blueprintHeading.textContent = "Pair Facts"
         if (els.blueprintCaption) {
           els.blueprintCaption.hidden = false
           els.blueprintCaption.textContent = "These lights show the relationship between both twins together. Neither twin alone reveals either fact."
@@ -792,6 +843,9 @@ export function mountUI(root, initialEngine) {
       if (els.aliceControlsArea) {
         els.aliceControlsArea.hidden = tools.length === 0
       }
+      if (els.aliceStatusText) {
+        els.aliceStatusText.textContent = state.levelId === 13 ? "READABLE" : "ACTIVE · YOU ACT HERE"
+      }
       if (els.btnFlip) els.btnFlip.hidden = !tools.includes("flip")
       if (els.btnTwist) els.btnTwist.hidden = !tools.includes("twist")
       if (els.btnLens) els.btnLens.hidden = !tools.includes("lens")
@@ -799,7 +853,7 @@ export function mountUI(root, initialEngine) {
 
       // Bob lock status
       const isLocked = state.lockedQubits && state.lockedQubits.includes("B")
-      if (els.bobStatusText) els.bobStatusText.textContent = isLocked ? "LOCKED · CANNOT ACT" : "INACTIVE · FRESH PARCEL"
+      if (els.bobStatusText) els.bobStatusText.textContent = state.levelId === 13 ? "READABLE" : (isLocked ? "LOCKED · CANNOT ACT" : "INACTIVE · FRESH PARCEL")
       if (els.bobLockIcon) els.bobLockIcon.textContent = isLocked ? "🔒" : "⏱"
       if (els.bobStatusPill) els.bobStatusPill.className = isLocked ? "twin-status-pill status-locked" : "twin-status-pill status-inactive"
       if (els.bobLockScrim) els.bobLockScrim.hidden = !isLocked
@@ -830,7 +884,7 @@ export function mountUI(root, initialEngine) {
         if (state.thread) {
           els.threadContainer.classList.add("thread-active")
           els.threadContainer.classList.remove("thread-disabled")
-          if (els.threadText) els.threadText.textContent = "Entangled Pair (Thread active)"
+          if (els.threadText) els.threadText.textContent = "Linked"
         } else {
           els.threadContainer.classList.remove("thread-active")
           els.threadContainer.classList.add("thread-disabled")
