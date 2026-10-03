@@ -147,6 +147,20 @@ describe('Tier 1 Checker: budget.js', () => {
     expect(res).toEqual({ ok: false, detail: 'missing answer.plan array' })
   })
 
+  it('returns missing budget limits when parcel or twin limits are not provided', () => {
+    const levelNoBudget = {
+      id: 20,
+      target: {
+        type: 'budget',
+        messages: [{ id: 'm1', bits: '0' }],
+      },
+    }
+    const res = checkBudget(levelNoBudget, {}, {
+      plan: [{ messageId: 'm1', chunk: '0', useTwin: false }],
+    })
+    expect(res).toEqual({ ok: false, detail: 'missing budget limits' })
+  })
+
   it('accepts optimal 7-parcel, 3-twin plan for Level 20', () => {
     const optimalPlan = {
       plan: [

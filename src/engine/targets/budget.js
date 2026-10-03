@@ -19,14 +19,21 @@ export function check(level, context, answer) {
   const parcelBudget =
     level?.extra?.budget?.parcels ??
     level?.target?.parcelBudget ??
-    level?.extra?.parcelBudget ??
-    Infinity
+    level?.extra?.parcelBudget
 
   const twinBudget =
     level?.extra?.budget?.twins ??
     level?.target?.twinBudget ??
-    level?.extra?.twinBudget ??
-    Infinity
+    level?.extra?.twinBudget
+
+  if (
+    typeof parcelBudget !== 'number' ||
+    typeof twinBudget !== 'number' ||
+    Number.isNaN(parcelBudget) ||
+    Number.isNaN(twinBudget)
+  ) {
+    return { ok: false, detail: 'missing budget limits' }
+  }
 
   const plan = answer.plan
   const parcelsUsed = plan.length
