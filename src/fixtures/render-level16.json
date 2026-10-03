@@ -10,7 +10,7 @@
   "state": [0.5, 0.5, 0.5, -0.5],
   "dial": null,
   "toolsAvailable": ["lens", "linker", "unmake"],
-  "lenses": ["ud"],
+  "toolsAvailable": ["lens", "linker"],
   "lockedQubits": [],
   "thread": true,
   "lights": null,
@@ -23,7 +23,7 @@
   "stars": 0,
   "extra": {
     "delivery": { "index": 0, "total": 4 },
-    "decoded": [],
+  "par": 8,
     "readings": { "A": null, "B": null },
     "lastAttempt": null
   },
