@@ -166,4 +166,20 @@ describe('Game Engine (src/engine/index.js)', () => {
     expect(resetState.tally).toEqual({ ud: [0, 0], side: [0, 0] })
     expect(resetState.feedback).toEqual({ kind: null, text: '' })
   })
+
+  it('falls back to test-level.json and logs console.info when loader returns zero levels', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const infoSpy = vi.spyOn(console, 'info').mockImplementation(() => {})
+
+    const engine = createEngine()
+    expect(infoSpy).toHaveBeenCalledWith(
+      expect.stringContaining('falling back to src/fixtures/test-level.json')
+    )
+    const state = engine.getRenderState()
+    expect(state.levelId).toBe(14)
+    expect(state.title).toBe('One-hand writing')
+
+    infoSpy.mockRestore()
+    warnSpy.mockRestore()
+  })
 })
