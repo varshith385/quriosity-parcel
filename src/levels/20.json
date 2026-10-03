@@ -1,0 +1,64 @@
+{
+  "id": 20,
+  "act": 5,
+  "tier": 1,
+  "title": "Full delivery",
+  "mode": "post",
+  "newWords": [],
+  "tools": [],
+  "lenses": [],
+  "lockedQubits": [],
+  "start": {
+    "kind": "pair",
+    "t": 0
+  },
+  "phases": [
+    "alice"
+  ],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "budget"
+  },
+  "par": 2,
+  "goalLine": "Deliver every message within the budget.",
+  "hints": [
+    {
+      "afterFailures": 3,
+      "text": "A plain parcel carries 1 bit. A parcel with a twin carries 2."
+    },
+    {
+      "afterFailures": 5,
+      "text": "Each twin works only once. Don't spend one on a single bit."
+    }
+  ],
+  "events": {},
+  "extra": {
+    "messages": [
+      {
+        "id": "m1",
+        "bits": "1"
+      },
+      {
+        "id": "m2",
+        "bits": "10"
+      },
+      {
+        "id": "m3",
+        "bits": "101"
+      },
+      {
+        "id": "m4",
+        "bits": "1011"
+      }
+    ],
+    "budget": {
+      "parcels": 7,
+      "twins": 3
+    }
+  },
+  "physicsCheck": "check-02",
+  "removePhysicsNote": "Without twins every parcel carries 1 bit, so 10 bits would need 10 parcels."
+}

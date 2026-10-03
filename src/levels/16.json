@@ -1,0 +1,62 @@
+{
+  "id": 16,
+  "act": 5,
+  "tier": 1,
+  "title": "Unmake",
+  "mode": "post",
+  "newWords": [
+    "unmake"
+  ],
+  "tools": [
+    "lens",
+    "linker",
+    "unmake"
+  ],
+  "lenses": [
+    "ud"
+  ],
+  "lockedQubits": [],
+  "start": {
+    "kind": "pair",
+    "t": 0
+  },
+  "phases": [
+    "bob"
+  ],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "stream"
+  },
+  "par": 4,
+  "goalLine": "Turn each delivery into its two bits.",
+  "hints": [
+    {
+      "afterFailures": 2,
+      "text": "Looking at each twin on its own gives nothing steady. Undo Alice's machine first."
+    },
+    {
+      "afterFailures": 4,
+      "text": "Undo means the same steps in reverse order."
+    },
+    {
+      "afterFailures": 6,
+      "text": "Run the linker, then the lens-changer, then look at each twin once."
+    }
+  ],
+  "events": {
+    "no-visible-change": "Nothing new came out of that step."
+  },
+  "extra": {
+    "messages": [
+      "10",
+      "01",
+      "00",
+      "11"
+    ]
+  },
+  "physicsCheck": "check-02",
+  "removePhysicsNote": "Without the pair, one look at one parcel gives only one bit, so a second bit has nowhere to come from."
+}
