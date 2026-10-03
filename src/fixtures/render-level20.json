@@ -1,0 +1,76 @@
+{
+  "levelId": 20,
+  "title": "Full delivery",
+  "goalLine": "Deliver all messages within the parcel budget.",
+  "mode": "post",
+  "tier": 1,
+  "newWords": [],
+  "target": {
+    "type": "budget",
+    "messages": [
+      { "id": "m1", "bits": "0" },
+      { "id": "m2", "bits": "10" },
+      { "id": "m3", "bits": "110" },
+      { "id": "m4", "bits": "0101" }
+    ],
+    "parcelBudget": 7,
+    "twinBudget": 3
+  },
+  "phase": "alice",
+  "state": [1, 0, 0, 0],
+  "dial": null,
+  "toolsAvailable": ["flip", "twist", "lens", "linker", "unmake"],
+  "lenses": ["ud", "side"],
+  "lockedQubits": [],
+  "thread": false,
+  "lights": null,
+  "meters": null,
+  "tally": null,
+  "moveLog": [],
+  "moveCount": 0,
+  "failureCount": 0,
+  "par": 7,
+  "stars": 0,
+  "extra": {
+    "messages": [
+      { "id": "m1", "bits": "0" },
+      { "id": "m2", "bits": "10" },
+      { "id": "m3", "bits": "110" },
+      { "id": "m4", "bits": "0101" }
+    ],
+    "parcelBudget": 7,
+    "twinBudget": 3
+  },
+  "status": "playing",
+  "feedback": {
+    "kind": null,
+    "text": ""
+  },
+  "score": {
+    "bitsPerParcel": 0,
+    "parcelsUsed": 0,
+    "twinsLeft": 3
+  },
+  "progress": {
+    "completedIds": [1, 2, 3, 4, 5, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+    "starsById": {
+      "1": 3,
+      "2": 3,
+      "3": 3,
+      "4": 3,
+      "5": 3,
+      "7": 2,
+      "8": 3,
+      "9": 3,
+      "11": 3,
+      "12": 3,
+      "13": 2,
+      "14": 3,
+      "15": 3,
+      "16": 3,
+      "17": 2,
+      "18": 3,
+      "19": 2
+    }
+  }
+}
