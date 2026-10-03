@@ -1,1 +1,1146 @@
-/* Owned by Role 3 (src/ui/, src/style.css) */
+/* ==========================================================================
+   Parcel for Two — Visuals Design System & Level 14 UI
+   WCAG AA/AAA Compliant · Responsive · Accessible (No colour-alone cues)
+   ========================================================================== */
+
+:root {
+  /* Color Palette */
+  --color-bg-base: #0b0f19;
+  --color-bg-surface: #131b2e;
+  --color-bg-elevated: #1e293b;
+  --color-bg-blueprint: #0c1c38;
+  
+  --color-border-subtle: #334155;
+  --color-border-strong: #475569;
+  --color-border-focus: #38bdf8;
+  
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-text-faint: #64748b;
+  
+  /* Role & Mechanic Accents */
+  --color-alice-active: #10b981;
+  --color-alice-glow: rgba(16, 185, 129, 0.25);
+  
+  --color-bob-locked: #ef4444;
+  --color-bob-locked-bg: rgba(239, 68, 68, 0.12);
+  --color-bob-border: #7f1d1d;
+  
+  --color-flip: #f59e0b;
+  --color-flip-bg: rgba(245, 158, 11, 0.12);
+  
+  --color-twist: #818cf8;
+  --color-twist-bg: rgba(129, 140, 248, 0.12);
+  
+  --color-thread: #06b6d4;
+  --color-thread-glow: rgba(6, 182, 212, 0.5);
+
+  --color-agree: #10b981;
+  --color-differ: #f97316;
+  --color-unsure: #94a3b8;
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Radii & Shadows */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+}
+
+/* Base resets */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-text-main);
+  background-color: var(--color-bg-base);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  width: 100%;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 3rem;
+}
+
+/* ==========================================================================
+   APP SHELL & CONTAINER
+   ========================================================================== */
+.parcel-game-app {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ==========================================================================
+   HEADER & LEVEL INFO
+   ========================================================================== */
+.game-header {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-md);
+}
+
+.header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.level-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+}
+
+.badge-act {
+  background: #1e3a5f;
+  color: #7dd3fc;
+  border-color: #0369a1;
+}
+
+.badge-level {
+  background: #312e81;
+  color: #c7d2fe;
+  border-color: #4338ca;
+}
+
+.badge-phase {
+  background: #064e3b;
+  color: #6ee7b7;
+  border-color: #059669;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.move-tracker {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: var(--color-bg-base);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.btn-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.btn-reset:hover {
+  background: #334155;
+  border-color: var(--color-border-focus);
+}
+
+.btn-reset:active {
+  transform: translateY(1px);
+}
+
+.level-title {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.goal-line {
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  color: #cbd5e1;
+}
+
+/* ==========================================================================
+   TARGET BANNER
+   ========================================================================== */
+.target-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: #0f1f38;
+  border: 2px dashed #38bdf8;
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+}
+
+.target-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.target-tag {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #38bdf8;
+}
+
+.target-value-box {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.target-label {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.target-code {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 900;
+  color: #facc15;
+  background: #172554;
+  padding: 0.1rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #eab308;
+  letter-spacing: 0.1em;
+}
+
+.target-rule-hint {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+}
+
+.rule-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(15, 23, 42, 0.7);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.chip-shape {
+  font-size: 1rem;
+  color: #38bdf8;
+}
+
+.target-status-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+}
+
+.current-label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.current-value {
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.1em;
+}
+
+.status-pill {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+}
+
+.pill-progress {
+  background: #334155;
+  color: #cbd5e1;
+  border-color: #475569;
+}
+
+.pill-matched {
+  background: #065f46;
+  color: #a7f3d0;
+  border-color: #10b981;
+  animation: pulseGreen 1.5s infinite alternate;
+}
+
+@keyframes pulseGreen {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  100% { box-shadow: 0 0 10px 4px rgba(16, 185, 129, 0.6); }
+}
+
+/* ==========================================================================
+   VICTORY BANNER
+   ========================================================================== */
+.win-banner {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+  border: 2px solid #34d399;
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+}
+
+.win-content {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.win-stars {
+  font-size: 2.25rem;
+  color: #facc15;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 8px rgba(250, 204, 21, 0.6);
+}
+
+.win-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.win-desc {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #d1fae5;
+}
+
+/* ==========================================================================
+   FEEDBACK BAR
+   ========================================================================== */
+.feedback-section {
+  width: 100%;
+}
+
+.feedback-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1.25rem;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-left-width: 5px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.feedback-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+.feedback-message {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--color-text-main);
+  font-weight: 500;
+}
+
+/* Feedback Variants */
+.feedback-info {
+  border-left-color: #38bdf8;
+  background: #0c1a2e;
+}
+
+.feedback-info .feedback-badge {
+  color: #7dd3fc;
+}
+
+.feedback-blocked {
+  border-left-color: #ef4444;
+  background: #2a1215;
+  border-color: #991b1b;
+}
+
+.feedback-blocked .feedback-badge {
+  color: #fca5a5;
+  background: #450a0a;
+}
+
+.feedback-hint {
+  border-left-color: #f59e0b;
+  background: #241a0b;
+}
+
+.feedback-hint .feedback-badge {
+  color: #fde68a;
+}
+
+/* ==========================================================================
+   BLUEPRINT VIEW (PAIR FACTS)
+   ========================================================================== */
+.blueprint-section {
+  background: var(--color-bg-blueprint);
+  border: 2px solid #1e3a8a;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: inset 0 0 30px rgba(30, 58, 138, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle blueprint technical grid overlay */
+.blueprint-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+
+.blueprint-header {
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.blueprint-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.blueprint-tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #38bdf8;
+  background: #172554;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #1d4ed8;
+}
+
+.blueprint-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.blueprint-caption {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+  color: #93c5fd;
+}
+
+.lights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.blueprint-light-panel {
+  background: #0f172a;
+  border: 2px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.light-top {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.light-glyph-wrapper {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e293b;
+  border: 1px solid #475569;
+  flex-shrink: 0;
+}
+
+.light-geometric-shape {
+  font-size: 1.5rem;
+  color: #f8fafc;
+}
+
+/* Non-colour visual patterns (stripes vs dots) */
+.pattern-indicator {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  opacity: 0.2;
+}
+
+.pattern-stripes {
+  background: repeating-linear-gradient(
+    45deg,
+    #ffffff,
+    #ffffff 2px,
+    transparent 2px,
+    transparent 6px
+  );
+}
+
+.pattern-dots {
+  background-image: radial-gradient(#ffffff 20%, transparent 20%);
+  background-position: 0 0;
+  background-size: 6px 6px;
+}
+
+.light-meta {
+  flex-grow: 1;
+}
+
+.light-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.light-subtext {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.light-state-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+}
+
+.light-explanation {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  background: #1e293b;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid #64748b;
+}
+
+.light-control-tag {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* Light States (Agree / Differ / Unsure) - Always pairing color with patterns & symbols */
+.blueprint-light-panel[data-state="agree"] {
+  border-color: #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+}
+
+.blueprint-light-panel[data-state="agree"] .light-state-badge {
+  background: #064e3b;
+  color: #6ee7b7;
+  border-color: #059669;
+}
+
+.blueprint-light-panel[data-state="differ"] {
+  border-color: #f97316;
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.2);
+}
+
+.blueprint-light-panel[data-state="differ"] .light-state-badge {
+  background: #431407;
+  color: #fdba74;
+  border-color: #ea580c;
+  border-style: dashed;
+}
+
+.blueprint-light-panel[data-state="unsure"] {
+  border-color: #64748b;
+}
+
+.blueprint-light-panel[data-state="unsure"] .light-state-badge {
+  background: #1e293b;
+  color: #94a3b8;
+  border-color: #475569;
+  border-style: dotted;
+}
+
+/* ==========================================================================
+   TWIN CARDS & ENTANGLEMENT THREAD
+   ========================================================================== */
+.twins-section {
+  display: flex;
+  align-items: stretch;
+  gap: 1.25rem;
+}
+
+.twin-card {
+  flex: 1;
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+/* ALICE'S ACTIVE CARD */
+.twin-alice {
+  border: 2px solid var(--color-alice-active);
+  box-shadow: 0 0 15px var(--color-alice-glow);
+}
+
+.twin-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding-bottom: 0.75rem;
+}
+
+.twin-role-tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #38bdf8;
+}
+
+.twin-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.twin-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+}
+
+.status-active {
+  background: #064e3b;
+  color: #6ee7b7;
+  border: 1px solid #10b981;
+}
+
+.active-dot {
+  color: #34d399;
+  font-size: 0.65rem;
+  animation: pulseDot 1.2s infinite alternate;
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.3); opacity: 1; }
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  flex-grow: 1;
+}
+
+/* PARCEL GRAPHIC */
+.parcel-visual-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem 0;
+}
+
+.parcel-card-graphic {
+  width: 220px;
+  background: #1e293b;
+  border: 2px solid #475569;
+  border-radius: var(--radius-md);
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  transform-origin: center center;
+  transition: transform 0.35s ease;
+}
+
+.parcel-body {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-around;
+  background: #0f172a;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem;
+  border: 1px solid #334155;
+}
+
+.parcel-stamp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.stamp-symbol {
+  font-size: 1.25rem;
+  color: #ffffff;
+}
+
+.stamp-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.stamp-stripes {
+  border: 1px dashed #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.stamp-dots {
+  border: 1px dotted #818cf8;
+  background: rgba(129, 140, 248, 0.1);
+}
+
+.parcel-divider {
+  width: 1px;
+  height: 36px;
+  background: #334155;
+}
+
+.parcel-caption {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* CONTROLS AREA */
+.twin-controls-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.controls-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.buttons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* ALICE TOOL BUTTONS: FLIP vs TWIST (Visibly & distinctively styled) */
+.tool-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.85rem 0.5rem;
+  cursor: pointer;
+  background: var(--color-bg-base);
+  color: var(--color-text-main);
+  transition: transform 0.15s, background-color 0.2s, box-shadow 0.2s, border-color 0.2s;
+  min-height: 72px;
+}
+
+.btn-top {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tool-name {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.tool-desc {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* FLIP: Rectangular box, dashed amber border, card turnover icon */
+.btn-flip {
+  border: 2px dashed var(--color-flip);
+  border-radius: var(--radius-sm);
+  background: #1f1708;
+}
+
+.btn-flip .flip-icon {
+  font-size: 1.2rem;
+  color: var(--color-flip);
+}
+
+.btn-flip:hover {
+  background: #2e220b;
+  border-color: #fbbf24;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-flip:active {
+  transform: translateY(1px);
+}
+
+/* TWIST: Rounded pill, dotted indigo border, spiral rotation icon */
+.btn-twist {
+  border: 2px dotted var(--color-twist);
+  border-radius: var(--radius-lg);
+  background: #131733;
+}
+
+.btn-twist .twist-icon {
+  font-size: 1.2rem;
+  color: var(--color-twist);
+}
+
+.btn-twist:hover {
+  background: #1e2452;
+  border-color: #a5b4fc;
+  box-shadow: 0 0 10px rgba(129, 140, 248, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-twist:active {
+  transform: translateY(1px);
+}
+
+/* ==========================================================================
+   DISTINCT ANIMATIONS FOR FLIP & TWIST
+   ========================================================================== */
+/* Flip = 3D vertical card somersault / turnover */
+.anim-flip {
+  animation: cardFlipAction 0.4s ease-in-out;
+}
+
+@keyframes cardFlipAction {
+  0% { transform: perspective(600px) rotateY(0deg); }
+  50% { transform: perspective(600px) rotateY(90deg) scale(0.92); border-color: var(--color-flip); }
+  100% { transform: perspective(600px) rotateY(0deg); }
+}
+
+/* Twist = In-plane rotational axial twist wobble */
+.anim-twist {
+  animation: cardTwistAction 0.4s ease-in-out;
+}
+
+@keyframes cardTwistAction {
+  0% { transform: rotate(0deg); }
+  30% { transform: rotate(-22deg) scale(1.06); border-color: var(--color-twist); }
+  70% { transform: rotate(22deg) scale(1.06); border-color: var(--color-twist); }
+  100% { transform: rotate(0deg); }
+}
+
+/* ==========================================================================
+   QUANTUM ENTANGLEMENT THREAD
+   ========================================================================== */
+.thread-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 90px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.thread-beam {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.thread-node {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-thread);
+  box-shadow: 0 0 8px var(--color-thread);
+  flex-shrink: 0;
+}
+
+.thread-line {
+  flex-grow: 1;
+  height: 3px;
+  background: linear-gradient(90deg, #0891b2, #38bdf8, #0891b2);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 8px var(--color-thread-glow);
+}
+
+.thread-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 100%;
+  background: #ffffff;
+  box-shadow: 0 0 10px #ffffff;
+  animation: threadBeamMove 1.8s infinite linear;
+}
+
+@keyframes threadBeamMove {
+  0% { transform: translateX(-30px); }
+  100% { transform: translateX(90px); }
+}
+
+.thread-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #082f49;
+  border: 1px solid #0284c7;
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.45rem;
+}
+
+.thread-icon {
+  font-size: 1rem;
+  color: #38bdf8;
+}
+
+.thread-text {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #7dd3fc;
+  line-height: 1.2;
+}
+
+.thread-disabled {
+  opacity: 0.2;
+}
+
+/* ==========================================================================
+   BOB'S CARD (LOCKED)
+   ========================================================================== */
+.twin-bob.locked-card {
+  border: 2px solid var(--color-bob-border);
+  background: #140d11;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.status-locked {
+  background: #450a0a;
+  color: #fca5a5;
+  border: 1px solid #dc2626;
+}
+
+.graphic-locked {
+  position: relative;
+  border-color: #7f1d1d;
+  background: #1c1117;
+}
+
+.lock-scrim-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 10, 15, 0.82);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  text-align: center;
+  z-index: 2;
+  backdrop-filter: blur(1px);
+}
+
+.lock-big-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #7f1d1d;
+  color: #fee2e2;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #ef4444;
+  margin-bottom: 0.35rem;
+}
+
+.lock-giant-icon {
+  font-size: 1.15rem;
+}
+
+.lock-banner-text {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.lock-reason-text {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #fca5a5;
+  line-height: 1.3;
+}
+
+.muted-body {
+  opacity: 0.3;
+}
+
+.muted {
+  filter: grayscale(1);
+}
+
+.btn-disabled {
+  background: #181216;
+  border: 1px solid #4a1d24;
+  color: #7f1d1d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.btn-disabled .tool-icon {
+  color: #dc2626;
+}
+
+/* Bob Locked Shake Animation */
+.anim-shake {
+  animation: lockRattle 0.35s ease-in-out;
+}
+
+@keyframes lockRattle {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (LAPTOP & PHONE)
+   ========================================================================== */
+@media (max-width: 768px) {
+  #app {
+    padding: 0.75rem 0.5rem 2rem;
+  }
+
+  .level-title {
+    font-size: 1.45rem;
+  }
+
+  .target-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .target-status-box {
+    align-items: flex-start;
+    width: 100%;
+    border-top: 1px dashed var(--color-border-subtle);
+    padding-top: 0.5rem;
+  }
+
+  .twins-section {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .thread-connector {
+    width: 100%;
+    height: 48px;
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+
+  .thread-beam {
+    width: 120px;
+  }
+
+  .buttons-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-btn {
+    min-height: 52px;
+  }
+}

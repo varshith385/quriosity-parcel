@@ -1,5 +1,6 @@
-import { createEngine } from './engine/index.js'
+import './style.css'
 import { mountUI } from './ui/index.js'
+import { createFakeEngine } from './ui/fakeEngine.js'
 
-const engine = createEngine()
+const engine = createFakeEngine()
 mountUI(document.getElementById('app'), engine)
