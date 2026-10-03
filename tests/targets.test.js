@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { makePair, zeroState, encode } from '../src/quantum/sim.js'
+import {
+  makePair,
+  zeroState,
+  encode,
+  dialState,
+  applyX,
+  applyZ,
+} from '../src/quantum/sim.js'
 import { check as checkState } from '../src/engine/targets/state.js'
 import { check as checkMessage } from '../src/engine/targets/message.js'
 import { check as checkTable } from '../src/engine/targets/table.js'
@@ -37,20 +44,65 @@ describe('Tier 1 Checker: message.js', () => {
     expect(res).toEqual({ ok: false, detail: 'missing context.state' })
   })
 
-  it('correctly validates pairFacts against target bits for Level 14', () => {
+  it('for each message in 00, 01, 10, 11, encode(makePair(), bits) passes its own target and fails the other three', () => {
     const messages = ['00', '01', '10', '11']
     const pair = makePair()
 
     for (const bits of messages) {
-      const level = { id: 14, target: { type: 'message', bits } }
-      const matchingState = encode(pair, bits)
-      expect(checkMessage(level, { state: matchingState }, {})).toMatchObject({ ok: true })
-
-      // Wrong message state
-      const wrongBits = bits === '00' ? '11' : '00'
-      const nonMatchingState = encode(pair, wrongBits)
-      expect(checkMessage(level, { state: nonMatchingState }, {})).toMatchObject({ ok: false })
+      const state = encode(pair, bits)
+      for (const targetBits of messages) {
+        const level = { id: 14, target: { type: 'message', bits: targetBits } }
+        const res = checkMessage(level, { state }, {})
+        if (targetBits === bits) {
+          expect(res.ok).toBe(true)
+        } else {
+          expect(res.ok).toBe(false)
+        }
+      }
     }
+  })
+
+  it('for target "10", the state after only a flip (message 01) FAILS and after only a twist (message 10) PASSES', () => {
+    const pair = makePair()
+    const target10 = { id: 14, target: { type: 'message', bits: '10' } }
+
+    // After only a flip (applyX on Alice => message "01", XX agree, ZZ differ)
+    const flipOnlyState = applyX(pair, 'A')
+    const flipRes = checkMessage(target10, { state: flipOnlyState }, {})
+    expect(flipRes.ok).toBe(false)
+
+    // After only a twist (applyZ on Alice => message "10", XX differ, ZZ agree)
+    const twistOnlyState = applyZ(pair, 'A')
+    const twistRes = checkMessage(target10, { state: twistOnlyState }, {})
+    expect(twistRes.ok).toBe(true)
+  })
+
+  it('|00> and a dial state fail with unsure', () => {
+    const target = { id: 14, target: { type: 'message', bits: '10' } }
+
+    const zero = zeroState() // |00>
+    const zeroRes = checkMessage(target, { state: zero }, {})
+    expect(zeroRes.ok).toBe(false)
+    expect(zeroRes.detail).toContain('unsure')
+
+    const dial = dialState(45)
+    const dialRes = checkMessage(target, { state: dial }, {})
+    expect(dialRes.ok).toBe(false)
+    expect(dialRes.detail).toContain('unsure')
+  })
+
+  it('a checker call with moveCount > 0 and a non-winning state still fails', () => {
+    const target = { id: 14, target: { type: 'message', bits: '10' } }
+    const pair = makePair()
+    const wrongState = encode(pair, '01') // flip instead of twist
+
+    const res = checkMessage(target, { state: wrongState, moveCount: 5 }, {})
+    expect(res.ok).toBe(false)
+
+    // Even on zero state with moveCount > 0
+    const zeroRes = checkMessage(target, { state: zeroState(), moveCount: 2 }, {})
+    expect(zeroRes.ok).toBe(false)
+    expect(zeroRes.detail).toContain('unsure')
   })
 })
 
