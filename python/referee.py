@@ -262,40 +262,65 @@ def check_5_at_most_two_distinguishable_states() -> tuple[bool, str]:
     """
     Check 5: At most 2 perfectly distinguishable single-qubit states.
     Two pure quantum states are perfectly distinguishable in a single shot iff they are orthogonal.
-    Since single-qubit Hilbert space has dimension 2 (C^2), the maximum size of any pairwise
-    orthogonal set of single-qubit states is exactly 2.
+    Build single-qubit states cos(t/2)|0> + sin(t/2)|1> for t in 0..359 degrees.
+    Assert:
+      1. Two are perfectly distinguishable (overlap |<a|b>|^2 < 1e-9) ONLY when they
+         are 180 degrees apart.
+      2. No set of three states has all pairwise overlaps zero.
     """
-    # 1. Verify Hilbert space dimension of single qubit
-    dim_H1 = 2
-
-    # 2. Test four dial arrow candidates from Level 8 (0, 90, 180, 270 degrees)
-    angles = [0, 90, 180, 270]
-    # Dial state: [cos(t/2), sin(t/2)]
+    # Build single-qubit states cos(t/2)|0> + sin(t/2)|1> for t in 0..359 degrees
     states = [
-        np.array([np.cos(np.radians(t) / 2.0), np.sin(np.radians(t) / 2.0)])
-        for t in angles
+        Statevector([np.cos(np.radians(t) / 2.0), np.sin(np.radians(t) / 2.0)])
+        for t in range(360)
     ]
 
-    # Find the maximum clique of pairwise orthogonal states (tolerance 0.05 on overlap)
-    max_distinguishable = 1
-    for k in range(2, len(states) + 1):
-        for subset in combinations(range(len(states)), k):
-            pairwise_ortho = True
-            for i, j in combinations(subset, 2):
-                overlap = abs(float(np.dot(states[i], states[j])))
-                if overlap > 0.05:
-                    pairwise_ortho = False
-                    break
-            if pairwise_ortho and k > max_distinguishable:
-                max_distinguishable = k
+    # Precompute amplitude matrix for vectorized pairwise overlap calculation
+    V = np.array([sv.data for sv in states])
+    # Overlap matrix: overlap[i, j] = |<psi_i | psi_j>|^2
+    overlap_matrix = (V @ V.T) ** 2
 
-    # 3. Algebraic verification: for any orthonormal basis {|e1>, |e2>} in C^2,
-    # any 3rd normalized state |psi> = c1|e1> + c2|e2> satisfies |c1|^2 + |c2|^2 = 1.
-    # Therefore |<e1|psi>|^2 + |<e2|psi>|^2 = 1 > 0, so |psi> cannot be orthogonal to both.
-    if max_distinguishable == 2 and dim_H1 == 2:
-        return True, f"Max distinguishable single-qubit states = {max_distinguishable} (dim(H) = 2)"
-    else:
-        return False, f"Failed: found max distinguishable = {max_distinguishable}, expected 2"
+    # 1. Assert two states are perfectly distinguishable (overlap < 1e-9) ONLY when 180 degrees apart
+    ortho_pairs = []
+    for t1 in range(360):
+        for t2 in range(t1 + 1, 360):
+            overlap = overlap_matrix[t1, t2]
+            is_ortho = overlap < 1e-9
+            is_180_apart = (t2 - t1) == 180
+
+            if is_ortho:
+                if not is_180_apart:
+                    return False, (
+                        f"States at t1={t1} and t2={t2} (diff={t2-t1} deg) had overlap {overlap:.2e} < 1e-9, "
+                        f"expected only when 180 deg apart!"
+                    )
+                ortho_pairs.append((t1, t2))
+            else:
+                if is_180_apart:
+                    return False, (
+                        f"States at t1={t1} and t2={t2} (180 deg apart) failed orthogonality with overlap {overlap:.2e}!"
+                    )
+
+    if len(ortho_pairs) != 180:
+        return False, f"Expected exactly 180 orthogonal pairs, found {len(ortho_pairs)}"
+
+    # 2. Assert that no set of three states has all pairwise overlaps zero
+    # Check 1: Using algebraic graph theory (3-cliques in orthogonality graph)
+    adj = (overlap_matrix < 1e-9) & ~np.eye(360, dtype=bool)
+    num_triangles = int(np.trace(adj @ adj @ adj) // 6)
+    if num_triangles != 0:
+        return False, f"Found {num_triangles} sets of three states with all pairwise overlaps zero!"
+
+    # Check 2: Explicit search across all candidate triplets from orthogonal pairs
+    for t1, t2 in ortho_pairs:
+        for t3 in range(360):
+            if t3 != t1 and t3 != t2:
+                if overlap_matrix[t1, t3] < 1e-9 and overlap_matrix[t2, t3] < 1e-9:
+                    return False, f"Found 3 mutually orthogonal states: t1={t1}, t2={t2}, t3={t3}"
+
+    return True, (
+        f"Verified across 360 dial states (0..359 deg): pairs are perfectly distinguishable "
+        f"(overlap < 1e-9) only at 180 deg apart (180 pairs total), and no set of 3 states has all pairwise overlaps zero"
+    )
 
 
 def check_6_hh_equals_i_and_hzh_equals_x() -> tuple[bool, str]:

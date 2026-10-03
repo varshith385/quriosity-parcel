@@ -107,15 +107,32 @@ def generate_expected():
         sv_dec = Statevector(qc)
         decode_expected[msg] = round_statevector(sv_dec.data)
 
-    # 3. Dial extras
-    # At t = 60 degrees: P(up) = cos^2(t/2) = cos^2(30 deg) = (sqrt(3)/2)^2 = 0.75
-    # At t = 45 degrees: sureness in both lenses = max(p, 1-p) = cos^2(22.5 deg)
-    t60_rad = math.radians(60)
-    p_up_t60 = round(math.cos(t60_rad / 2) ** 2, 12)
+    # 3. Dial extras computed directly from Qiskit Statevectors:
+    # At t = 60 degrees: single-qubit state cos(t/2)|0> + sin(t/2)|1> via Ry rotation
+    qc60 = QuantumCircuit(1)
+    qc60.ry(np.radians(60), 0)
+    sv60 = Statevector(qc60)
+    probs_60 = sv60.probabilities()
+    p_up_t60 = round(float(probs_60[0]), 12)
 
-    t45_rad = math.radians(45)
-    # cos^2(22.5 deg) = (1 + cos(45 deg)) / 2 = (1 + 1/sqrt(2)) / 2 = 0.85355339059327...
-    sureness_t45 = round(math.cos(t45_rad / 2) ** 2, 12)
+    # At t = 45 degrees: sureness = max(p, 1-p) for both up-down (Z) and sideways (X) lenses
+    qc45 = QuantumCircuit(1)
+    qc45.ry(np.radians(45), 0)
+    sv45_ud = Statevector(qc45)
+    probs_45_ud = sv45_ud.probabilities()
+    sureness_t45_ud = max(probs_45_ud[0], probs_45_ud[1])
+
+    # Sideways lens (apply H before measurement)
+    qc45_side = qc45.copy()
+    qc45_side.h(0)
+    sv45_side = Statevector(qc45_side)
+    probs_45_side = sv45_side.probabilities()
+    sureness_t45_side = max(probs_45_side[0], probs_45_side[1])
+
+    assert np.isclose(sureness_t45_ud, sureness_t45_side, atol=1e-12), (
+        f"Sureness mismatch between lenses at t=45: UD={sureness_t45_ud}, Side={sureness_t45_side}"
+    )
+    sureness_t45 = round(float(sureness_t45_ud), 12)
 
     data = {
         "mapping": "Alice (A) on qubit 1, Bob (B) on qubit 0. Index = 2*a + b = [a00, a01, a10, a11]",
