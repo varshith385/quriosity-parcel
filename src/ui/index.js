@@ -40,6 +40,7 @@ export function mountUI(root, initialEngine) {
             <option value="13">Level 13 (Twins' facts)</option>
             <option value="14" selected>Level 14 (One-hand writing)</option>
             <option value="15">Level 15 (Superdense)</option>
+            <option value="16">Level 16 (Unmake)</option>
             <option value="20">Level 20 (Network Plan)</option>
           </select>
         </div>
@@ -74,10 +75,7 @@ export function mountUI(root, initialEngine) {
               </div>
               <div class="target-rule-hint" id="target-rule-hint"></div>
             </div>
-            <div class="target-status-box" id="target-status-box">
-              <span class="current-label">Current Pair Message:</span>
-              <span class="current-value" id="current-bits-display"></span>
-              <span class="status-pill" id="target-match-pill"></span>
+            <div class="target-status-box" id="target-status-box" hidden>
             </div>
           </div>
         </header>
@@ -138,9 +136,6 @@ export function mountUI(root, initialEngine) {
                 </div>
               </div>
               <div class="light-explanation" id="light-zz-desc"></div>
-              <div class="light-control-tag">
-                Controlled by: <strong>Flip</strong>
-              </div>
             </div>
 
             <!-- LIGHT 2: SHAPE LIGHT (XX) -->
@@ -160,9 +155,6 @@ export function mountUI(root, initialEngine) {
                 </div>
               </div>
               <div class="light-explanation" id="light-xx-desc"></div>
-              <div class="light-control-tag">
-                Controlled by: <strong>Twist</strong>
-              </div>
             </div>
           </div>
         </section>
@@ -173,7 +165,6 @@ export function mountUI(root, initialEngine) {
           <article class="twin-card twin-alice" id="card-alice">
             <div class="twin-card-header">
               <div class="twin-header-text">
-                <span class="twin-role-tag">QUBIT A</span>
                 <h2 class="twin-title">Alice's Twin</h2>
               </div>
               <span class="twin-status-pill status-active" id="alice-status-pill">
@@ -256,7 +247,6 @@ export function mountUI(root, initialEngine) {
           <article class="twin-card twin-bob" id="card-bob" tabindex="0" role="region" aria-label="Bob's Twin Parcel">
             <div class="twin-card-header">
               <div class="twin-header-text">
-                <span class="twin-role-tag">QUBIT B</span>
                 <h2 class="twin-title">Bob's Twin</h2>
               </div>
               <span class="twin-status-pill" id="bob-status-pill">
@@ -327,6 +317,11 @@ export function mountUI(root, initialEngine) {
             <button type="button" class="btn-read-twins" id="btn-read-twins">Read Both Twins</button>
 
             <div class="tally-display" id="tally-display" aria-live="polite"></div>
+
+            <div class="rounds-display" id="rounds-display" hidden style="margin-top: 1.5rem; border-top: 1px solid var(--color-border-subtle); padding-top: 1rem;">
+              <h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted);">Recent Rounds</h4>
+              <ul id="rounds-list" style="list-style: none; padding: 0; margin: 0; font-family: var(--font-mono); font-size: 0.95rem;"></ul>
+            </div>
           </div>
         </section>
 
@@ -356,7 +351,7 @@ export function mountUI(root, initialEngine) {
             </div>
           </div>
 
-          <p class="planner-rules" style="margin-bottom: 12px; font-size: 0.9em; opacity: 0.9;">A parcel carries 1 bit. With a twin it can carry 2 bits. Each twin can be used once. A parcel carries bits of one message only.</p>
+          <p class="planner-rules" style="margin-bottom: 12px; font-size: 0.9em; opacity: 0.9;">A plain parcel delivers 1 bit. A parcel sent with a twin can deliver 2 bits. Each twin is used up once. A parcel carries bits of one message only.</p>
 
           <div class="planner-messages" id="planner-messages">
           </div>
@@ -374,6 +369,77 @@ export function mountUI(root, initialEngine) {
             <div id="score-details"></div>
           </div>
         </section>
+
+        <!-- LEVEL 16 UNMAKE SECTION -->
+        <section class="level16-section" id="level16-section" hidden>
+          <div class="level16-header" style="margin-bottom: 1.5rem; text-align: center;">
+            <h2 id="l16-delivery-counter" style="font-size: 1.75rem; margin-bottom: 0.5rem;">Delivery 1 of 4</h2>
+            <div id="l16-delivery-chips" style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; flex-wrap: wrap;">
+            </div>
+            <p style="font-size: 1.1rem; font-weight: 500;">Alice's parcel has arrived. Bob now holds both twins.</p>
+          </div>
+
+          <div class="twins-section" style="margin-bottom: 1.5rem;">
+            <!-- ALICE TWIN -->
+            <article class="twin-card twin-alice" style="border: 2px solid var(--color-border-strong);">
+              <div class="twin-card-header">
+                <div class="twin-header-text">
+                  <h2 class="twin-title">Alice's Twin</h2>
+                </div>
+                <span class="twin-status-pill status-active">
+                  <span class="active-dot" aria-hidden="true">●</span>
+                  <span>BOB HOLDS THIS</span>
+                </span>
+              </div>
+              <div class="card-body">
+                <div class="parcel-visual-wrapper">
+                  <div class="parcel-card-graphic" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 120px; background: var(--color-bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 0.9rem; font-weight: bold; color: var(--color-text-dim); margin-bottom: 0.5rem;">READING</div>
+                    <div id="l16-reading-a" style="font-size: 3rem; font-weight: 800; line-height: 1;">?</div>
+                  </div>
+                </div>
+                <div class="twin-controls-area">
+                  <button type="button" class="btn-submit" id="btn-l16-look-a" style="width: 100%; margin-top: 1rem; padding: 0.75rem;">Look at Alice's twin</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- THREAD -->
+            <div class="thread-connector" style="width: 2rem;"></div>
+
+            <!-- BOB TWIN -->
+            <article class="twin-card twin-bob" style="border: 2px solid var(--color-border-strong);">
+              <div class="twin-card-header">
+                <div class="twin-header-text">
+                  <h2 class="twin-title">Bob's Twin</h2>
+                </div>
+                <span class="twin-status-pill status-active">
+                  <span class="active-dot" aria-hidden="true">●</span>
+                  <span>BOB HOLDS THIS</span>
+                </span>
+              </div>
+              <div class="card-body">
+                <div class="parcel-visual-wrapper">
+                  <div class="parcel-card-graphic" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 120px; background: var(--color-bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 0.9rem; font-weight: bold; color: var(--color-text-dim); margin-bottom: 0.5rem;">READING</div>
+                    <div id="l16-reading-b" style="font-size: 3rem; font-weight: 800; line-height: 1;">?</div>
+                  </div>
+                </div>
+                <div class="twin-controls-area">
+                  <button type="button" class="btn-submit" id="btn-l16-look-b" style="width: 100%; margin-top: 1rem; padding: 0.75rem;">Look at Bob's twin</button>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div class="l16-tools" style="background: var(--color-bg-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border-subtle); margin-bottom: 1.5rem;">
+            <span class="controls-label" style="display: block; margin-bottom: 1rem; font-weight: bold;">Bob's Tools:</span>
+            <div class="buttons-grid" id="l16-buttons-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+            </div>
+          </div>
+
+          <div id="l16-last-attempt" style="text-align: center; color: var(--color-text-dim); font-weight: 500;"></div>
+        </section>
       </div>
     `
 
@@ -386,6 +452,17 @@ export function mountUI(root, initialEngine) {
       checkSection: container.querySelector("#check-section"),
       checkBtn: container.querySelector("#check-btn"),
       btnNextLevel: container.querySelector("#btn-next-level"),
+
+      level16Section: container.querySelector("#level16-section"),
+      l16Counter: container.querySelector("#l16-delivery-counter"),
+      l16Chips: container.querySelector("#l16-delivery-chips"),
+      l16ReadingA: container.querySelector("#l16-reading-a"),
+      l16ReadingB: container.querySelector("#l16-reading-b"),
+      btnL16LookA: container.querySelector("#btn-l16-look-a"),
+      btnL16LookB: container.querySelector("#btn-l16-look-b"),
+      l16LastAttempt: container.querySelector("#l16-last-attempt"),
+      l16ButtonsGrid: container.querySelector("#l16-buttons-grid"),
+
       btnReset: container.querySelector("#btn-reset"),
       title: container.querySelector("#header-title"),
       goal: container.querySelector("#header-goal"),
@@ -438,6 +515,8 @@ export function mountUI(root, initialEngine) {
       measurementSection: container.querySelector("#measurement-section"),
       btnReadTwins: container.querySelector("#btn-read-twins"),
       tallyDisplay: container.querySelector("#tally-display"),
+      roundsDisplay: container.querySelector("#rounds-display"),
+      roundsList: container.querySelector("#rounds-list"),
       lensRadios: container.querySelectorAll("input[name='lens-select']"),
 
       tableSection: container.querySelector("#table-section"),
@@ -561,6 +640,28 @@ export function mountUI(root, initialEngine) {
       })
     }
 
+    const LEVEL16_TOOL_QUBIT = "A"
+    if (els.l16ButtonsGrid) {
+      els.l16ButtonsGrid.addEventListener("click", (e) => {
+        const btn = e.target.closest(".tool-btn")
+        if (!btn) return
+        const tool = btn.dataset.tool
+        if (currentEngine && typeof currentEngine.applyTool === "function") {
+          currentEngine.applyTool(tool, LEVEL16_TOOL_QUBIT)
+        }
+      })
+    }
+    if (els.btnL16LookA) {
+      els.btnL16LookA.addEventListener("click", () => {
+        if (currentEngine && typeof currentEngine.look === "function") currentEngine.look("A", "ud")
+      })
+    }
+    if (els.btnL16LookB) {
+      els.btnL16LookB.addEventListener("click", () => {
+        if (currentEngine && typeof currentEngine.look === "function") currentEngine.look("B", "ud")
+      })
+    }
+
     // Dev selector remount logic
     const devSelect = container.querySelector("#dev-level-select")
     if (devSelect) {
@@ -651,6 +752,14 @@ export function mountUI(root, initialEngine) {
           currentEngine.look("B", selectedLens)
         }
       })
+
+      els.lensRadios.forEach(radio => {
+        radio.addEventListener("change", () => {
+          if (currentEngine && typeof currentEngine.getRenderState === "function") {
+            render(currentEngine.getRenderState())
+          }
+        })
+      })
     }
 
     if (els.btnSubmitTable) {
@@ -659,9 +768,18 @@ export function mountUI(root, initialEngine) {
 
         const selects = els.tableBody.querySelectorAll("select")
         const cells = {}
-        selects.forEach(select => {
-          cells[select.dataset.id] = select.value
-        })
+
+        if (currentTableLevelId === 15) {
+          selects.forEach(select => {
+            const [rowId, colId] = select.dataset.id.split('.')
+            if (!cells[rowId]) cells[rowId] = {}
+            cells[rowId][colId] = select.value
+          })
+        } else {
+          selects.forEach(select => {
+            cells[select.dataset.id] = select.value
+          })
+        }
 
         currentEngine.submit({ cells })
       })
@@ -696,7 +814,14 @@ export function mountUI(root, initialEngine) {
         if (state.levelId === 20) els.moves.hidden = true;
         else {
           els.moves.hidden = false;
-          const parText = state.par !== undefined ? ` / Par: ${state.par}` : ""
+          let parText = ""
+          if (state.par !== undefined) {
+             if (state.levelId === 16) {
+                parText = ` · Par: ${state.par}`
+             } else {
+                parText = ` / Par: ${state.par}`
+             }
+          }
           els.moves.textContent = `Moves: ${state.moveCount || 0}${parText}`
         }
       }
@@ -722,6 +847,7 @@ export function mountUI(root, initialEngine) {
       if (els.measurementSection) els.measurementSection.hidden = true
       if (els.tableSection) els.tableSection.hidden = true
       if (els.plannerSection) els.plannerSection.hidden = true
+      if (els.level16Section) els.level16Section.hidden = true
 
       if (els.checkSection) {
         if ((state.levelId === 12 || state.levelId === 14) && state.status !== "won") {
@@ -740,6 +866,8 @@ export function mountUI(root, initialEngine) {
         renderLevel14(state)
       } else if (state.levelId === 15) {
         renderLevel15(state)
+      } else if (state.levelId === 16) {
+        renderLevel16(state)
       } else if (state.levelId === 20) {
         renderLevel20(state)
       } else {
@@ -895,42 +1023,88 @@ export function mountUI(root, initialEngine) {
 
     function renderTable(state) {
       const extra = state.extra || {}
-      const tableData = extra.factTable || extra.codebook
-      if (!tableData || tableData.length === 0) return
+
+      const isLevel13 = state.levelId === 13
+      const isLevel15 = state.levelId === 15
+
+      let hasData = false
+      if (isLevel13 && extra.rows && extra.columns && extra.options) hasData = true
+
+      let codebookRows = []
+      if (isLevel15) {
+        if (Array.isArray(extra.codebook)) codebookRows = extra.codebook
+        else if (extra.codebook && Array.isArray(extra.codebook.rows)) codebookRows = extra.codebook.rows
+        if (codebookRows.length > 0) hasData = true
+      }
+
+      if (!hasData) {
+        if (isLevel13 && extra.factTable) hasData = true
+        else return
+      }
 
       if (els.tableSection) els.tableSection.hidden = false
-      if (els.tableTitle) els.tableTitle.textContent = extra.factTable ? "Fact Table" : "Codebook"
+      if (els.tableTitle) els.tableTitle.textContent = isLevel13 ? "Fact Table" : "Codebook"
 
       if (currentTableLevelId !== state.levelId) {
         currentTableLevelId = state.levelId
         if (els.tableBody) {
           let html = ""
-          const isFact = !!extra.factTable
-          tableData.forEach(row => {
-            let optionsHtml = `<option value="">-- select --</option>`
-            if (isFact) {
-              optionsHtml += `
-                <option value="agree">Agree</option>
-                <option value="differ">Differ</option>
-                <option value="random">Random</option>
-              `
-            } else {
-              optionsHtml += `
-                <option value="00">00 (Agree, Agree)</option>
-                <option value="01">01 (Agree, Differ)</option>
-                <option value="10">10 (Differ, Agree)</option>
-                <option value="11">11 (Differ, Differ)</option>
-              `
+
+          if (isLevel13) {
+            if (extra.rows && extra.columns && extra.options) {
+              const optionsHtml = `<option value="">-- select --</option>` + extra.options.map(opt => `<option value="${opt}">${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`).join("")
+
+              extra.rows.forEach(row => {
+                html += `<div class="table-row table-row-l13">
+                  <label class="row-label">${row.label}</label>
+                  <div class="row-selects">`
+                extra.columns.forEach(col => {
+                  html += `<div class="cell-block">
+                    <span class="cell-label">${col.label}</span>
+                    <select class="row-select" data-id="${row.id}.${col.id}">${optionsHtml}</select>
+                  </div>`
+                })
+                html += `</div></div>`
+              })
+            } else if (extra.factTable) {
+              extra.factTable.forEach(row => {
+                let optionsHtml = `<option value="">-- select --</option><option value="agree">Agree</option><option value="differ">Differ</option><option value="random">Random</option>`
+                html += `
+                  <div class="table-row">
+                    <label class="row-label" for="select-${row.id}">${row.label}</label>
+                    <select class="row-select" id="select-${row.id}" data-id="${row.id}">
+                      ${optionsHtml}
+                    </select>
+                  </div>
+                `
+              })
             }
-            html += `
-              <div class="table-row">
-                <label class="row-label" for="select-${row.id}">${row.label}</label>
-                <select class="row-select" id="select-${row.id}" data-id="${row.id}">
-                  ${optionsHtml}
-                </select>
-              </div>
-            `
-          })
+          } else if (isLevel15) {
+            codebookRows.forEach(row => {
+              let label = ""
+              if (row.moves !== undefined) {
+                if (row.moves.length === 0) label = "Nothing"
+                else label = row.moves.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(" then ")
+              } else {
+                label = row.label
+              }
+
+              const optionsHtml = `<option value="">-- select --</option><option value="agree">Agree</option><option value="differ">Differ</option>`
+              html += `<div class="table-row table-row-l15">
+                <label class="row-label">${label}</label>
+                <div class="row-selects">
+                  <div class="cell-block">
+                    <span class="cell-label">Colour light</span>
+                    <select class="row-select" data-id="${row.id}.zz">${optionsHtml}</select>
+                  </div>
+                  <div class="cell-block">
+                    <span class="cell-label">Shape light</span>
+                    <select class="row-select" data-id="${row.id}.xx">${optionsHtml}</select>
+                  </div>
+                </div>
+              </div>`
+            })
+          }
           els.tableBody.innerHTML = html
         }
       }
@@ -950,6 +1124,28 @@ export function mountUI(root, initialEngine) {
           els.tallyDisplay.innerHTML = tallyHtml
         } else {
           els.tallyDisplay.innerHTML = ""
+        }
+      }
+
+      if (els.roundsDisplay && els.roundsList) {
+        let selectedLens = "ud"
+        if (els.lensRadios) {
+          els.lensRadios.forEach(radio => {
+            if (radio.checked) selectedLens = radio.value
+          })
+        }
+
+        const extra = state.extra || {}
+        const readings = (extra.pairReadings && extra.pairReadings[selectedLens]) || []
+
+        if (readings.length > 0) {
+          els.roundsDisplay.hidden = false
+          els.roundsList.innerHTML = readings.map((r, i) => {
+             return `<li style="margin-bottom: 0.35rem; padding-bottom: 0.35rem; border-bottom: 1px solid var(--color-border-subtle);">Round ${i + 1}: Alice's twin ${r.a} · Bob's twin ${r.b}</li>`
+          }).join("")
+        } else {
+          els.roundsDisplay.hidden = true
+          els.roundsList.innerHTML = ""
         }
       }
     }
@@ -1016,6 +1212,108 @@ export function mountUI(root, initialEngine) {
           if (els.plannerScoreCard) els.plannerScoreCard.hidden = true
         }
         renderPlanner()
+      }
+    }
+
+    function renderLevel16(state) {
+      if (els.level16Section) els.level16Section.hidden = false
+      renderWinBanner(state)
+
+      const extra = state.extra || {}
+      const d = extra.delivery
+      if (d && els.l16Counter) {
+        els.l16Counter.textContent = `Delivery ${d.index + 1} of ${d.total}`
+      }
+
+      if (d && els.l16Chips) {
+        els.l16Chips.innerHTML = ""
+        for (let i = 0; i < d.total; i++) {
+          const chip = document.createElement("span")
+          chip.style.padding = "0.5rem 1rem"
+          chip.style.borderRadius = "var(--radius-sm)"
+          chip.style.fontWeight = "bold"
+          chip.style.border = "1px solid var(--color-border-strong)"
+
+          if (i < d.index) {
+            chip.style.background = "var(--color-bg-elevated)"
+            const decoded = extra.decoded || []
+            chip.textContent = `${i + 1}: ${decoded[i] !== undefined ? decoded[i] : "-"}`
+          } else if (i === d.index) {
+            chip.style.background = "#3b82f6"
+            chip.style.color = "#fff"
+            chip.textContent = "NOW"
+          } else {
+            chip.style.background = "var(--color-bg-surface)"
+            chip.style.color = "var(--color-text-dim)"
+            chip.textContent = `${i + 1}: -`
+          }
+          els.l16Chips.appendChild(chip)
+        }
+      }
+
+      const r = extra.readings
+      if (r) {
+        if (els.l16ReadingA) els.l16ReadingA.textContent = r.A !== null ? r.A : "?"
+        if (els.l16ReadingB) els.l16ReadingB.textContent = r.B !== null ? r.B : "?"
+
+        if (els.btnL16LookA) {
+          if (r.A !== null) {
+            els.btnL16LookA.textContent = "Already read"
+            els.btnL16LookA.disabled = true
+            els.btnL16LookA.classList.add("btn-disabled")
+          } else {
+            els.btnL16LookA.textContent = "Look at Alice's twin"
+            els.btnL16LookA.disabled = false
+            els.btnL16LookA.classList.remove("btn-disabled")
+          }
+        }
+        if (els.btnL16LookB) {
+          if (r.B !== null) {
+            els.btnL16LookB.textContent = "Already read"
+            els.btnL16LookB.disabled = true
+            els.btnL16LookB.classList.add("btn-disabled")
+          } else {
+            els.btnL16LookB.textContent = "Look at Bob's twin"
+            els.btnL16LookB.disabled = false
+            els.btnL16LookB.classList.remove("btn-disabled")
+          }
+        }
+      }
+
+      if (els.l16ButtonsGrid) {
+        let toolsHtml = ""
+        const tools = state.toolsAvailable || []
+        tools.forEach(tool => {
+          let name = tool.toUpperCase()
+          let desc = ""
+          let icon = ""
+          if (tool === "linker") {
+            desc = "Acts on both twins"
+            icon = "🔗"
+          } else if (tool === "lens") {
+            name = "LENS-CHANGER"
+            desc = "Acts on one twin"
+            icon = ""
+          }
+          toolsHtml += `
+            <button type="button" class="tool-btn btn-${tool}" data-tool="${tool}">
+              <div class="btn-top">
+                <span class="tool-icon" aria-hidden="true">${icon}</span>
+                <span class="tool-name">${name}</span>
+              </div>
+              <span class="tool-desc">${desc}</span>
+            </button>
+          `
+        })
+        els.l16ButtonsGrid.innerHTML = toolsHtml
+      }
+
+      if (els.l16LastAttempt) {
+        if (extra.lastAttempt && Array.isArray(extra.lastAttempt)) {
+          els.l16LastAttempt.textContent = `Last try: ${extra.lastAttempt.join(" · ")}`
+        } else {
+          els.l16LastAttempt.textContent = ""
+        }
       }
     }
 
