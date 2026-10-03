@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
-import { createEngine, normalizeLevel } from './index.js'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { createEngine, normalizeLevel, PROGRESS_STORAGE_KEY } from './index.js'
 import testLevelFixture from '../fixtures/test-level.json'
 
 describe('Game Engine (src/engine/index.js)', () => {
@@ -181,5 +181,119 @@ describe('Game Engine (src/engine/index.js)', () => {
 
     infoSpy.mockRestore()
     warnSpy.mockRestore()
+  })
+
+  describe('Progress Saving', () => {
+    let mockStore = {}
+
+    beforeEach(() => {
+      mockStore = {}
+      const mockStorage = {
+        getItem: vi.fn((key) => mockStore[key] ?? null),
+        setItem: vi.fn((key, val) => {
+          mockStore[key] = String(val)
+        }),
+        removeItem: vi.fn((key) => {
+          delete mockStore[key]
+        }),
+        clear: vi.fn(() => {
+          mockStore = {}
+        }),
+      }
+      vi.stubGlobal('localStorage', mockStorage)
+    })
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it('loads saved progress from localStorage under one key on createEngine', () => {
+      mockStore[PROGRESS_STORAGE_KEY] = JSON.stringify({
+        completedIds: [1, 2],
+        starsById: { 1: 3, 2: 2 },
+      })
+
+      const engine = createEngine({ levels: [normalizeLevel(testLevelFixture)] })
+      const state = engine.getRenderState()
+
+      expect(localStorage.getItem).toHaveBeenCalledWith(PROGRESS_STORAGE_KEY)
+      expect(state.progress.completedIds).toEqual([1, 2])
+      expect(state.progress.starsById).toEqual({ 1: 3, 2: 2 })
+    })
+
+    it('updates progress on level win, saves to localStorage, and preserves best stars', () => {
+      const engine = createEngine({ levels: [normalizeLevel(testLevelFixture)] })
+
+      // First win: 2 moves (at par 2) -> 3 stars
+      engine.applyTool('flip', 'A')
+      engine.applyTool('flip', 'A')
+      engine.submit()
+
+      let state = engine.getRenderState()
+      expect(state.status).toBe('won')
+      expect(state.stars).toBe(3)
+      expect(state.progress.completedIds).toContain(14)
+      expect(state.progress.starsById[14]).toBe(3)
+
+      expect(localStorage.setItem).toHaveBeenCalledWith(
+        PROGRESS_STORAGE_KEY,
+        expect.stringContaining('"completedIds":[14]')
+      )
+
+      // Replay level: 5 moves (> 2 * par) -> 1 star
+      engine.reset()
+      for (let i = 0; i < 5; i++) {
+        engine.applyTool('flip', 'A')
+      }
+      engine.submit()
+
+      state = engine.getRenderState()
+      expect(state.status).toBe('won')
+      expect(state.stars).toBe(1)
+      // Best stars should still be 3!
+      expect(state.progress.starsById[14]).toBe(3)
+
+      const savedData = JSON.parse(mockStore[PROGRESS_STORAGE_KEY])
+      expect(savedData.starsById[14]).toBe(3)
+    })
+
+    it('handles localStorage throwing on read without crashing and uses safe defaults', () => {
+      vi.stubGlobal('localStorage', {
+        getItem: vi.fn(() => {
+          throw new Error('SecurityError: Access to localStorage is denied')
+        }),
+        setItem: vi.fn(),
+      })
+
+      let engine
+      expect(() => {
+        engine = createEngine({ levels: [normalizeLevel(testLevelFixture)] })
+      }).not.toThrow()
+
+      const state = engine.getRenderState()
+      expect(state.progress.completedIds).toEqual([])
+      expect(state.progress.starsById).toEqual({})
+    })
+
+    it('handles localStorage throwing on write without crashing and still updates in-memory progress', () => {
+      vi.stubGlobal('localStorage', {
+        getItem: vi.fn(() => null),
+        setItem: vi.fn(() => {
+          throw new Error('QuotaExceededError: storage is full')
+        }),
+      })
+
+      const engine = createEngine({ levels: [normalizeLevel(testLevelFixture)] })
+      engine.applyTool('flip', 'A')
+
+      expect(() => {
+        engine.submit()
+      }).not.toThrow()
+
+      const state = engine.getRenderState()
+      expect(state.status).toBe('won')
+      expect(state.progress.completedIds).toContain(14)
+      expect(state.progress.starsById[14]).toBe(3)
+    })
   })
 })
