@@ -55,6 +55,8 @@ export function safeSaveProgress(progress) {
   }
 }
 
+function isPairReadLevel(level) { return level?.target?.type === "table" && level?.mode === "pair" && Array.isArray(level?.extra?.columns) && level.extra.columns.some((c) => c.id === "together") }
+
 function isStreamLevel(level) {
   return level?.target?.type === 'stream' && level?.mode === 'post'
 }
@@ -106,6 +108,8 @@ export function createEngine(options = {}) {
   let decoded = []
   let readings = { A: null, B: null }
   let lastAttempt = null
+  let pairReadings = { ud: [], side: [] }
+  let round = { A: null, B: null, lens: null }
 
   const listeners = new Set()
 
@@ -147,6 +151,9 @@ export function createEngine(options = {}) {
       }
     } else {
       extra = { ...currentLevel.extra }
+      if (isPairReadLevel(currentLevel)) {
+        extra.pairReadings = { ud: [...pairReadings.ud], side: [...pairReadings.side] }
+      }
     }
 
     return {
@@ -232,6 +239,8 @@ export function createEngine(options = {}) {
     decoded = []
     readings = { A: null, B: null }
     lastAttempt = null
+    pairReadings = { ud: [], side: [] }
+    round = { A: null, B: null, lens: null }
   }
 
   function applyTool(name, qubit) {
@@ -306,6 +315,15 @@ export function createEngine(options = {}) {
     const targetQubit = qubit || (currentPhase === 'bob' ? 'B' : 'A')
     const targetLens = lens || 'ud'
     lastLens = targetLens
+    if (isPairReadLevel(currentLevel)) {
+      if (round.lens && round.lens !== targetLens) { quantumState = sim.makePair(); round = { A: null, B: null, lens: null } }
+      if (round[targetQubit] !== null) {
+        feedback = { kind: "info", text: "You already read that twin in this round." }
+        renderState = buildRenderState()
+        notify()
+        return { actor, outcome: round[targetQubit], qubit: targetQubit, lens: targetLens, state: [...quantumState] }
+      }
+    }
 
     if (isStreamLevel(currentLevel)) {
       if (readings[targetQubit] !== null) {
@@ -341,6 +359,16 @@ export function createEngine(options = {}) {
     const outcomeIndex = res.outcome === 1 || res.outcome === '-' ? 1 : 0
     const lensKey = targetLens === 'side' ? 'side' : 'ud'
     tally[lensKey][outcomeIndex]++
+    if (isPairReadLevel(currentLevel)) {
+      round[targetQubit] = outcomeIndex
+      round.lens = targetLens
+      if (round.A !== null && round.B !== null) {
+        pairReadings[lensKey].push({ a: round.A, b: round.B })
+        pairReadings[lensKey] = pairReadings[lensKey].slice(-10)
+        quantumState = sim.makePair()
+        round = { A: null, B: null, lens: null }
+      }
+    }
 
     if (isStreamLevel(currentLevel)) {
       readings[targetQubit] = outcomeIndex
