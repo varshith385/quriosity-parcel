@@ -1,0 +1,52 @@
+{
+  "id": 13,
+  "act": 4,
+  "tier": 1,
+  "title": "Twins' facts",
+  "mode": "pair",
+  "newWords": ["entanglement"],
+  "tools": [],
+  "lenses": ["ud", "side"],
+  "lockedQubits": [],
+  "start": {
+    "kind": "pair",
+    "t": 0
+  },
+  "phases": ["alice"],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "table"
+  },
+  "par": 2,
+  "goalLine": "Fill in the table from what you see.",
+  "hints": [
+    {
+      "afterFailures": 3,
+      "text": "One twin alone never settles. Keep looking."
+    },
+    {
+      "afterFailures": 5,
+      "text": "Read many pairs in each lens before you decide."
+    }
+  ],
+  "events": {
+    "no-visible-change": "Looking at one twin alone gave no pattern."
+  },
+  "extra": {
+    "control": false,
+    "rows": [
+      { "id": "ud", "label": "Up-down lens" },
+      { "id": "side", "label": "Sideways lens" }
+    ],
+    "columns": [
+      { "id": "alone", "label": "One twin alone" },
+      { "id": "together", "label": "Twins compared" }
+    ],
+    "options": ["random", "agree", "differ"]
+  },
+  "physicsCheck": "check-03",
+  "removePhysicsNote": "Without the pair, 'Twins compared' would be random too: independent parcels agree only about half the time."
+}

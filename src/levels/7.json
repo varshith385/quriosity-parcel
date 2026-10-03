@@ -26,37 +26,7 @@
     "road": null
   },
   "target": {
-    "type": "readings",
-    "readings": [
-      {
-        "id": "r1",
-        "lens": "ud",
-        "outcome": 1,
-        "startT": 0,
-        "moves": ["flip"]
-      },
-      {
-        "id": "r2",
-        "lens": "side",
-        "outcome": 1,
-        "startT": 90,
-        "moves": ["twist"]
-      },
-      {
-        "id": "r3",
-        "lens": "ud",
-        "outcome": 0,
-        "startT": 180,
-        "moves": ["flip"]
-      },
-      {
-        "id": "r4",
-        "lens": "side",
-        "outcome": 0,
-        "startT": 270,
-        "moves": ["twist"]
-      }
-    ]
+    "type": "readings"
   },
   "par": 4,
   "goalLine": "Hit each target reading by making moves visible in that lens.",

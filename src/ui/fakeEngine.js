@@ -5,27 +5,26 @@
  */
 
 export function createFakeEngine(initialOverrides = {}) {
+  const levelId = initialOverrides.levelId || 14
+  
   let state = {
-    levelId: 14,
-    title: "One-hand writing",
-    goalLine: "Make the lights match the target message.",
-    mode: "pair",
+    levelId: levelId,
+    title: levelId === 12 ? "Make twins" : (levelId === 13 ? "Twins' facts" : (levelId === 15 ? "Your own codebook" : (levelId === 20 ? "Network Plan" : "One-hand writing"))),
+    goalLine: levelId === 12 ? "Produce two linked parcels." : (levelId === 13 ? "Read the twins and complete the fact table." : (levelId === 15 ? "Map each move to its light pattern." : (levelId === 20 ? "Plan a sequence to deliver the messages within budget." : "Make the lights match the target message."))),
+    mode: levelId === 20 ? "post" : "pair",
     tier: 1,
-    newWords: ["flip", "twist"],
-    target: { type: "message", bits: "10" },
+    newWords: levelId === 12 ? ["lens-changer", "linker", "entanglement"] : ["flip", "twist"],
+    target: (levelId === 12 || levelId === 13 || levelId === 15) ? null : (levelId === 20 ? { type: "budget" } : { type: "message", bits: "10" }),
     phase: "alice",
-    state: [1 / Math.SQRT2, 0, 0, 1 / Math.SQRT2],
+    state: levelId === 12 ? [1, 0, 0, 0] : [1 / Math.SQRT2, 0, 0, 1 / Math.SQRT2],
     dial: null,
-    toolsAvailable: ["flip", "twist"],
-    lenses: ["ud", "side"],
-    lockedQubits: ["B"],
-    thread: true,
-    lights: {
-      zz: "agree",
-      xx: "agree"
-    },
+    toolsAvailable: levelId === 12 ? ["lens", "linker"] : (levelId === 13 ? [] : ["flip", "twist"]),
+    lenses: levelId === 13 ? ["ud", "side"] : ["ud"],
+    lockedQubits: (levelId === 12 || levelId === 13) ? [] : ["B"],
+    thread: levelId === 12 ? false : true,
+    lights: (levelId === 12 || levelId === 13) ? null : { zz: "agree", xx: "agree" },
     meters: null,
-    tally: null,
+    tally: levelId === 13 ? { ud: [0, 0], side: [0, 0] } : null,
     moveLog: [],
     moveCount: 0,
     failureCount: 0,
@@ -35,7 +34,7 @@ export function createFakeEngine(initialOverrides = {}) {
     status: "playing",
     feedback: {
       kind: "info",
-      text: "Alice acts on her twin only. Bob's twin is locked."
+      text: levelId === 12 ? "Apply the lens-changer and the linker." : (levelId === 13 ? "Choose a lens and read both twins." : (levelId === 15 ? "Try moves to fill the codebook." : (levelId === 20 ? "Create a plan." : "Alice acts on her twin only. Bob's twin is locked.")))
     },
     score: null,
     progress: {
@@ -43,6 +42,33 @@ export function createFakeEngine(initialOverrides = {}) {
       starsById: {}
     },
     ...initialOverrides
+  }
+
+  if (levelId === 13) {
+    state.extra.factTable = [
+      { id: "ud", label: "When both are read up-down..." },
+      { id: "side", label: "When both are read sideways..." }
+    ]
+    state.extra.control = false
+    state.lenses = ["ud", "side"]
+  } else if (levelId === 15) {
+    state.extra.codebook = [
+      { id: "I", label: "Nothing" },
+      { id: "X", label: "Flip (X)" },
+      { id: "Z", label: "Twist (Z)" },
+      { id: "XZ", label: "Twist then Flip" }
+    ]
+    state.lenses = ["ud"]
+  } else if (levelId === 14) {
+    state.lenses = ["ud", "side"]
+  } else if (levelId === 20) {
+    state.extra.messages = [
+      { id: "m1", bits: "1" },
+      { id: "m2", bits: "10" },
+      { id: "m3", bits: "101" },
+      { id: "m4", bits: "1011" }
+    ]
+    state.extra.budget = { parcels: 7, twins: 3 }
   }
 
   const subscribers = new Set()
@@ -75,92 +101,180 @@ export function createFakeEngine(initialOverrides = {}) {
       state.failureCount = (state.failureCount || 0) + 1
       state.feedback = {
         kind: "blocked",
-        text: "Bob's twin is locked. Alice acts on her twin only."
+        text: state.levelId === 12 ? "Apply tools to slot A (the left parcel)." : "Bob's twin is locked. Alice acts on her twin only."
       }
       notify()
       return
     }
 
-    if (qubit === "A") {
-      if (name === "flip") {
-        // Flip changes ONLY zz (Colour light)
-        const nextZz = state.lights.zz === "agree" ? "differ" : "agree"
-        state.lights.zz = nextZz
+    if (qubit === "A" || qubit === undefined) {
+      if (state.levelId === 12) {
         state.moveCount = (state.moveCount || 0) + 1
-        state.moveLog.push("flip")
-
-        if (nextZz === "differ") {
-          state.feedback = {
-            kind: "info",
-            text: "Flip (X) applied to Alice's twin: Colour light changed to DIFFER (Bit 2 = 1)."
+        state.moveLog.push(name)
+        
+        if (name === "lens") {
+          // Lens-changer (H) on A
+          const hasLens = state.moveLog.filter(m => m === "lens").length % 2 === 1;
+          if (hasLens) {
+            state.state = [1 / Math.SQRT2, 0, 1 / Math.SQRT2, 0]
+            state.feedback = { kind: "info", text: "Lens-changer applied. Qubit A is now a mix." }
+          } else {
+            state.state = [1, 0, 0, 0]
+            state.feedback = { kind: "info", text: "Lens-changer applied again. Qubit A is returned to zero." }
           }
-        } else {
-          state.feedback = {
-            kind: "info",
-            text: "Flip (X) applied again: Colour light returned to AGREE (Bit 2 = 0)."
+        } else if (name === "linker") {
+          // Linker (CNOT A->B)
+          const lastMove = state.moveLog[state.moveLog.length - 2]
+          if (state.state[0] === 1 / Math.SQRT2 && state.state[2] === 1 / Math.SQRT2) {
+            // Apply CNOT: swaps state[2] and state[3]
+            state.state = [1 / Math.SQRT2, 0, 0, 1 / Math.SQRT2]
+            state.thread = true
+            state.status = "won"
+            state.stars = state.moveCount <= state.par ? 3 : 2
+            state.feedback = { kind: "info", text: "Linker applied! The thread appears. Twins created!" }
+          } else {
+            state.feedback = { kind: "hint", text: "Linker applied, but nothing happened. State stayed |00>." }
           }
-        }
-      } else if (name === "twist") {
-        // Twist changes ONLY xx (Shape light)
-        const nextXx = state.lights.xx === "agree" ? "differ" : "agree"
-        state.lights.xx = nextXx
-        state.moveCount = (state.moveCount || 0) + 1
-        state.moveLog.push("twist")
-
-        if (nextXx === "differ") {
-          state.feedback = {
-            kind: "info",
-            text: "Twist (Z) applied to Alice's twin: Shape light changed to DIFFER (Bit 1 = 1)."
-          }
-        } else {
-          state.feedback = {
-            kind: "info",
-            text: "Twist (Z) applied again: Shape light returned to AGREE (Bit 1 = 0)."
-          }
-        }
-      }
-
-      // Check against target message:
-      // Bit 1 = Twist / Shape light (xx === "differ" -> "1", "agree" -> "0")
-      // Bit 2 = Flip / Colour light (zz === "differ" -> "1", "agree" -> "0")
-      const bit1 = state.lights.xx === "differ" ? "1" : "0"
-      const bit2 = state.lights.zz === "differ" ? "1" : "0"
-      const currentBits = `${bit1}${bit2}`
-
-      if (state.target && state.target.bits && currentBits === state.target.bits) {
-        state.status = "won"
-        state.stars = state.moveCount <= state.par ? 3 : (state.moveCount <= state.par * 2 ? 2 : 1)
-        state.feedback = {
-          kind: "info",
-          text: `Target ${state.target.bits} reached! Shape differs (1), Colour agrees (0). Message encoded!`
         }
       } else {
-        state.status = "playing"
-        state.stars = 0
-      }
+        // Level 14 logic
+        if (name === "flip") {
+          // Flip changes ONLY zz (Colour light)
+          const nextZz = state.lights.zz === "agree" ? "differ" : "agree"
+          state.lights.zz = nextZz
+          state.moveCount = (state.moveCount || 0) + 1
+          state.moveLog.push("flip")
 
+          if (nextZz === "differ") {
+            state.feedback = {
+              kind: "info",
+              text: "Flip (X) applied to Alice's twin: Colour light changed to DIFFER (Bit 2 = 1)."
+            }
+          } else {
+            state.feedback = {
+              kind: "info",
+              text: "Flip (X) applied again: Colour light returned to AGREE (Bit 2 = 0)."
+            }
+          }
+        } else if (name === "twist") {
+          // Twist changes ONLY xx (Shape light)
+          const nextXx = state.lights.xx === "agree" ? "differ" : "agree"
+          state.lights.xx = nextXx
+          state.moveCount = (state.moveCount || 0) + 1
+          state.moveLog.push("twist")
+
+          if (nextXx === "differ") {
+            state.feedback = {
+              kind: "info",
+              text: "Twist (Z) applied to Alice's twin: Shape light changed to DIFFER (Bit 1 = 1)."
+            }
+          } else {
+            state.feedback = {
+              kind: "info",
+              text: "Twist (Z) applied again: Shape light returned to AGREE (Bit 1 = 0)."
+            }
+          }
+        }
+
+        // Check against target message:
+        const bit1 = state.lights.xx === "differ" ? "1" : "0"
+        const bit2 = state.lights.zz === "differ" ? "1" : "0"
+        const currentBits = `${bit1}${bit2}`
+
+        if (state.target && state.target.bits) {
+          if (currentBits === state.target.bits) {
+            state.status = "won"
+            state.stars = state.moveCount <= state.par ? 3 : (state.moveCount <= state.par * 2 ? 2 : 1)
+            state.feedback = {
+              kind: "info",
+              text: `Target ${state.target.bits} reached! Shape differs (1), Colour agrees (0). Message encoded!`
+            }
+          } else {
+            state.status = "playing"
+            state.stars = 0
+          }
+        }
+      }
       notify()
     }
   }
 
-  function reset() {
-    state.lights = {
-      zz: "agree",
-      xx: "agree"
+  function look(qubit, lens) {
+    if (state.levelId === 13) {
+      if (!state.tally) state.tally = { ud: [0, 0], side: [0, 0] }
+      // Mock logic: Twins always agree, so we always increment bin 0 for 'ud' and bin 1 for 'side'
+      const bin = lens === "ud" ? 0 : 1
+      state.tally[lens][bin]++
+      
+      state.feedback = { kind: "info", text: `Looked at twin ${qubit} ${lens === "ud" ? "up-down" : "sideways"}.` }
+      notify()
     }
-    state.moveCount = 0
-    state.moveLog = []
-    state.status = "playing"
-    state.stars = 0
-    state.feedback = {
-      kind: "info",
-      text: "Reset: Alice acts on her twin only. Bob's twin is locked."
+  }
+
+  function submit(answer) {
+    if (state.levelId === 13) {
+      if (answer && answer.cells && answer.cells.ud === "agree" && answer.cells.side === "agree") {
+        state.status = "won"
+        state.stars = 3
+        state.feedback = { kind: "info", text: "Correct! Twins always agree when read in the same lens." }
+      } else {
+        state.failureCount = (state.failureCount || 0) + 1
+        state.feedback = { kind: "blocked", text: "Not quite right. Look at the tally again." }
+      }
+    } else if (state.levelId === 15) {
+      if (answer && answer.cells && answer.cells.I === "00" && answer.cells.X === "01" && answer.cells.Z === "10" && answer.cells.XZ === "11") {
+        state.status = "won"
+        state.stars = 3
+        state.feedback = { kind: "info", text: "Codebook complete!" }
+      } else {
+        state.failureCount = (state.failureCount || 0) + 1
+        state.feedback = { kind: "blocked", text: "Some patterns are wrong." }
+      }
+    } else if (state.levelId === 20) {
+      if (answer && answer.plan) {
+        state.status = "won"
+        state.stars = 3
+        state.score = {
+          bitsPerParcel: 1.43,
+          parcelsUsed: answer.plan.length,
+          twinsLeft: 3 - answer.plan.filter(r => r.useTwin).length
+        }
+        state.feedback = { kind: "info", text: "Plan executed successfully!" }
+      }
+    }
+    notify()
+  }
+
+  function reset() {
+    if (state.levelId === 12) {
+      state.state = [1, 0, 0, 0]
+      state.thread = false
+      state.moveCount = 0
+      state.moveLog = []
+      state.status = "playing"
+      state.stars = 0
+      state.feedback = { kind: "info", text: "Reset: Try to make twins." }
+    } else {
+      state.lights = {
+        zz: "agree",
+        xx: "agree"
+      }
+      state.moveCount = 0
+      state.moveLog = []
+      state.status = "playing"
+      state.stars = 0
+      state.feedback = {
+        kind: "info",
+        text: state.levelId === 13 ? "Reset: Choose a lens and read both twins." : (state.levelId === 15 ? "Reset: Try moves to fill the codebook." : (state.levelId === 20 ? "Reset: Create a plan." : "Reset: Alice acts on her twin only. Bob's twin is locked."))
+      }
     }
     notify()
   }
 
   return {
     applyTool,
+    look,
+    submit,
     getRenderState,
     subscribe,
     reset

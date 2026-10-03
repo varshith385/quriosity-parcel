@@ -1,0 +1,79 @@
+{
+  "id": 15,
+  "act": 4,
+  "tier": 1,
+  "title": "Your own codebook",
+  "mode": "pair",
+  "newWords": [],
+  "tools": [
+    "flip",
+    "twist"
+  ],
+  "lenses": [
+    "ud"
+  ],
+  "lockedQubits": [
+    "B"
+  ],
+  "start": {
+    "kind": "pair",
+    "t": 0
+  },
+  "phases": [
+    "alice"
+  ],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "table"
+  },
+  "par": 4,
+  "goalLine": "Fill in the codebook: one row per move.",
+  "hints": [
+    {
+      "afterFailures": 3,
+      "text": "Try each move on its own, then both together."
+    },
+    {
+      "afterFailures": 5,
+      "text": "'Both' is its own pattern. Compare it with the single moves."
+    }
+  ],
+  "events": {
+    "tool-blocked": "Bob's twin is locked.",
+    "no-visible-change": "Pressing the same button twice cancels itself out."
+  },
+  "extra": {
+    "codebook": {
+      "rows": [
+        {
+          "id": "nothing",
+          "moves": []
+        },
+        {
+          "id": "flip",
+          "moves": [
+            "flip"
+          ]
+        },
+        {
+          "id": "twist",
+          "moves": [
+            "twist"
+          ]
+        },
+        {
+          "id": "both",
+          "moves": [
+            "twist",
+            "flip"
+          ]
+        }
+      ]
+    }
+  },
+  "physicsCheck": "check-02",
+  "removePhysicsNote": "One lone parcel would only give two patterns; the second light needs the pair."
+}

@@ -45,6 +45,6 @@
     "minArrows": 2,
     "maxArrows": 4
   },
-  "physicsCheck": "check-05",
-  "removePhysicsNote": "Without opposite dial states, one look could never reliably tell two messages apart."
+  "physicsCheck": "check-08",
+  "removePhysicsNote": "If arrows other than opposite ones could be told apart, four messages would fit on one parcel. The angle rule allows only two."
 }
