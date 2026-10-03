@@ -32,14 +32,22 @@ function getChecker(type) {
   }
 }
 
-function safeLoadProgress() {
+export const PROGRESS_STORAGE_KEY = 'quriosity_progress'
+
+export function safeLoadProgress() {
   try {
-    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('quriosity_progress') : null
+    const raw =
+      typeof localStorage !== 'undefined'
+        ? localStorage.getItem(PROGRESS_STORAGE_KEY)
+        : null
     if (raw) {
       const parsed = JSON.parse(raw)
       return {
         completedIds: Array.isArray(parsed.completedIds) ? parsed.completedIds : [],
-        starsById: parsed.starsById && typeof parsed.starsById === 'object' ? parsed.starsById : {},
+        starsById:
+          parsed.starsById && typeof parsed.starsById === 'object'
+            ? parsed.starsById
+            : {},
       }
     }
   } catch (err) {
@@ -48,10 +56,16 @@ function safeLoadProgress() {
   return { completedIds: [], starsById: {} }
 }
 
-function safeSaveProgress(progress) {
+export function safeSaveProgress(progress) {
   try {
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('quriosity_progress', JSON.stringify(progress))
+      localStorage.setItem(
+        PROGRESS_STORAGE_KEY,
+        JSON.stringify({
+          completedIds: progress.completedIds || [],
+          starsById: progress.starsById || {},
+        })
+      )
     }
   } catch (err) {
     // localStorage may be disabled or blocked
@@ -93,7 +107,7 @@ export function createEngine(options = {}) {
   let status = 'playing'
   let feedback = { kind: null, text: '' }
   let score = null
-  let progress = safeLoadProgress()
+  let progress = options.progress || safeLoadProgress()
 
   const listeners = new Set()
 
