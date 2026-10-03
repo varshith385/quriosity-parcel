@@ -112,12 +112,16 @@ export function createEngine(options = {}) {
   const listeners = new Set()
 
   function checkHints() {
-    if (currentLevel.hints && Array.isArray(currentLevel.hints)) {
-      const hint = currentLevel.hints.find((h) => failureCount >= h.afterFailures)
-      if (hint && status === 'playing' && feedback.kind !== 'blocked') {
-        feedback = { kind: 'hint', text: hint.text }
+    if (status === 'playing' && currentLevel.hints && Array.isArray(currentLevel.hints)) {
+      const matchingHints = currentLevel.hints
+        .filter((h) => failureCount >= h.afterFailures)
+        .sort((a, b) => b.afterFailures - a.afterFailures)
+      if (matchingHints.length > 0) {
+        feedback = { kind: 'hint', text: matchingHints[0].text }
+        return true
       }
     }
+    return false
   }
 
   function buildRenderState() {
@@ -216,6 +220,9 @@ export function createEngine(options = {}) {
       return
     }
 
+    const prevLights = currentLevel.mode === 'pair' ? sim.pairFacts(quantumState) : null
+    const prevState = [...quantumState]
+
     moveCount++
     moveLog.push(name)
 
@@ -233,13 +240,42 @@ export function createEngine(options = {}) {
       quantumState = sim.applyH(quantumState, 'A')
     }
 
+    const newLights = currentLevel.mode === 'pair' ? sim.pairFacts(quantumState) : null
+    const newState = [...quantumState]
+
+    const lightsUnchanged =
+      currentLevel.mode === 'pair' &&
+      prevLights &&
+      newLights &&
+      prevLights.zz === newLights.zz &&
+      prevLights.xx === newLights.xx
+
+    const stateUnchanged = prevState.every(
+      (val, i) => Math.abs(val - newState[i]) < 1e-9
+    )
+
+    if (lightsUnchanged || stateUnchanged) {
+      const noChangeText =
+        currentLevel.events?.['no-visible-change'] || 'This move causes no visible change.'
+      feedback = { kind: 'info', text: noChangeText }
+    } else {
+      feedback = { kind: null, text: '' }
+    }
+
     checkHints()
     renderState = buildRenderState()
     notify()
   }
 
   function look(qubit, lens) {
-    const targetQubit = qubit || 'A'
+    const actor =
+      currentPhase === 'transit'
+        ? 'spy'
+        : currentPhase === 'bob'
+          ? 'bob'
+          : 'alice'
+
+    const targetQubit = qubit || (currentPhase === 'bob' ? 'B' : 'A')
     const targetLens = lens || 'ud'
     const rng = sim.makeRng(Date.now())
 
@@ -257,6 +293,14 @@ export function createEngine(options = {}) {
 
     renderState = buildRenderState()
     notify()
+
+    return {
+      actor,
+      outcome: res.outcome,
+      qubit: targetQubit,
+      lens: targetLens,
+      state: [...quantumState],
+    }
   }
 
   function setDial(tDegrees) {
@@ -275,10 +319,10 @@ export function createEngine(options = {}) {
   function deliver() {
     currentPhase = 'bob'
     if (currentLevel.transit?.road) {
-      const road = currentLevel.transit.road
-      if (road === 'X' || road === 'flip') {
+      const road = String(currentLevel.transit.road).toUpperCase()
+      if (road === 'X' || road === 'FLIP') {
         quantumState = sim.applyX(quantumState, 'A')
-      } else if (road === 'Z' || road === 'twist') {
+      } else if (road === 'Z' || road === 'TWIST') {
         quantumState = sim.applyZ(quantumState, 'A')
       } else if (road === 'XZ') {
         quantumState = sim.applyZ(quantumState, 'A')
@@ -323,15 +367,15 @@ export function createEngine(options = {}) {
       safeSaveProgress(progress)
       feedback = {
         kind: 'info',
-        text: result.detail || currentLevel.events?.win || 'Goal reached!',
+        text: currentLevel.events?.win || result.detail || 'Goal reached!',
       }
     } else {
       failureCount++
       feedback = {
         kind: 'info',
         text:
-          result.detail ||
           currentLevel.events?.['wrong-result'] ||
+          result.detail ||
           'Not quite right. Try again!',
       }
       checkHints()
