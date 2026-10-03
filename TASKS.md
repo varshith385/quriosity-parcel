@@ -1,0 +1,5 @@
+# Tasks (todo / doing / done, with owner)
+- [ ] todo: simulator + 6 physics tests (A)
+- [ ] todo: level framework + dial/pair visuals (B)
+- [ ] todo: level data format + level specs (C)
+- [ ] todo: deployment, README, video (D)
