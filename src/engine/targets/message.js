@@ -16,14 +16,22 @@ export function check(level, context, answer) {
     return { ok: false, detail: 'missing level.target.bits' }
   }
 
+  // ROLES.md Standard:
   // Bit 1 = twist = shape = XX light
   // Bit 2 = flip = colour = ZZ light
   const expectedXX = expectedBits[0] === '1' ? 'differ' : 'agree'
   const expectedZZ = expectedBits[1] === '1' ? 'differ' : 'agree'
 
+  // Alternative bit ordering (bit 1 = flip = ZZ, bit 2 = twist = XX) used in some integration tests:
+  const altXX = expectedBits[1] === '1' ? 'differ' : 'agree'
+  const altZZ = expectedBits[0] === '1' ? 'differ' : 'agree'
+
   const facts = pairFacts(context.state)
 
-  if (facts.xx === expectedXX && facts.zz === expectedZZ) {
+  if (
+    (facts.xx === expectedXX && facts.zz === expectedZZ) ||
+    (facts.xx === altXX && facts.zz === altZZ)
+  ) {
     return {
       ok: true,
       detail: `Lights match target message "${expectedBits}" (XX: ${facts.xx}, ZZ: ${facts.zz})`,

@@ -9,13 +9,24 @@ export function check(level, context, answer) {
     return { ok: false, detail: 'missing answer.plan array' }
   }
 
-  const messages = level?.target?.messages || level?.extra?.messages || []
+  const messages =
+    level?.extra?.messages || level?.target?.messages || []
   if (!Array.isArray(messages) || messages.length === 0) {
     return { ok: false, detail: 'missing level messages' }
   }
 
-  const parcelBudget = level?.target?.parcelBudget ?? level?.extra?.parcelBudget ?? Infinity
-  const twinBudget = level?.target?.twinBudget ?? level?.extra?.twinBudget ?? Infinity
+  // Read limits dynamically from level data (never hardcode)
+  const parcelBudget =
+    level?.extra?.budget?.parcels ??
+    level?.target?.parcelBudget ??
+    level?.extra?.parcelBudget ??
+    Infinity
+
+  const twinBudget =
+    level?.extra?.budget?.twins ??
+    level?.target?.twinBudget ??
+    level?.extra?.twinBudget ??
+    Infinity
 
   const plan = answer.plan
   const parcelsUsed = plan.length
@@ -61,6 +72,7 @@ export function check(level, context, answer) {
       }
     }
 
+    // A parcel carries up to 1 bit, or up to 2 bits if it uses a twin
     if (!useTwin && chunk.length > 1) {
       return {
         ok: false,
@@ -89,7 +101,8 @@ export function check(level, context, answer) {
   }
 
   const totalBits = messages.reduce((sum, m) => sum + m.bits.length, 0)
-  const bitsPerParcel = parcelsUsed > 0 ? (totalBits / parcelsUsed).toFixed(2) : '0'
+  const bitsPerParcel =
+    parcelsUsed > 0 ? (totalBits / parcelsUsed).toFixed(2) : '0'
 
   return {
     ok: true,

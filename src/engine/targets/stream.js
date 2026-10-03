@@ -5,19 +5,21 @@
  */
 
 export function check(level, context, answer) {
-  if (!context || !context.sent) {
+  const expected =
+    context?.sent || level?.extra?.messages || level?.target?.bits
+
+  if (!expected) {
     return { ok: false, detail: 'missing context.sent' }
   }
 
-  if (!Array.isArray(context.sent)) {
-    return { ok: false, detail: 'context.sent must be an array' }
+  if (!Array.isArray(expected)) {
+    return { ok: false, detail: 'expected stream must be an array' }
   }
 
   if (!answer || !Array.isArray(answer.bits)) {
     return { ok: false, detail: 'missing answer.bits array' }
   }
 
-  const expected = context.sent
   const actual = answer.bits
 
   if (actual.length !== expected.length) {
