@@ -39,8 +39,8 @@ export function mountUI(root, engine) {
         <h1 class="level-title" id="header-title">One-hand writing</h1>
         <p class="goal-line" id="header-goal">Make the lights match the target message.</p>
 
-        <!-- TARGET BANNER -->
-        <div class="target-card">
+        <!-- TARGET BANNER (Hidden in Level 12) -->
+        <div class="target-card" id="target-card">
           <div class="target-main">
             <span class="target-tag">MISSION GOAL</span>
             <div class="target-value-box">
@@ -65,8 +65,8 @@ export function mountUI(root, engine) {
         <div class="win-content">
           <div class="win-stars" id="win-stars">★★★</div>
           <div class="win-text-group">
-            <h2 class="win-title">Message "10" Encoded!</h2>
-            <p class="win-desc">Alice encoded two facts into the pair using only her twin. Bob's twin stayed locked.</p>
+            <h2 class="win-title" id="win-title-text">Success!</h2>
+            <p class="win-desc" id="win-desc-text">You completed the level.</p>
           </div>
         </div>
       </div>
@@ -83,7 +83,8 @@ export function mountUI(root, engine) {
       </section>
 
       <!-- BLUEPRINT VIEW (PAIR FACTS) -->
-      <section class="blueprint-section" aria-labelledby="blueprint-heading">
+      <!-- BLUEPRINT VIEW (PAIR FACTS) - Hidden if no lights -->
+      <section class="blueprint-section" id="blueprint-section" aria-labelledby="blueprint-heading">
         <div class="blueprint-header">
           <div class="blueprint-title-row">
             <span class="blueprint-tag">📐 BLUEPRINT VIEW</span>
@@ -154,16 +155,16 @@ export function mountUI(root, engine) {
               <span class="twin-role-tag">QUBIT A</span>
               <h2 class="twin-title">Alice's Twin</h2>
             </div>
-            <span class="twin-status-pill status-active">
+            <span class="twin-status-pill status-active" id="alice-status-pill">
               <span class="active-dot" aria-hidden="true">●</span>
-              <span>ACTIVE · YOU ACT HERE</span>
+              <span id="alice-status-text">ACTIVE · YOU ACT HERE</span>
             </span>
           </div>
 
           <div class="card-body">
             <div class="parcel-visual-wrapper">
               <div class="parcel-card-graphic" id="alice-parcel-graphic">
-                <div class="parcel-body">
+                <div class="parcel-body" id="alice-parcel-body">
                   <div class="parcel-stamp stamp-stripes">
                     <span class="stamp-symbol">◆</span>
                     <span class="stamp-label">COLOUR</span>
@@ -174,7 +175,7 @@ export function mountUI(root, engine) {
                     <span class="stamp-label">SHAPE</span>
                   </div>
                 </div>
-                <div class="parcel-caption">Alice's Parcel in Hand</div>
+                <div class="parcel-caption" id="alice-parcel-caption">Alice's Parcel in Hand</div>
               </div>
             </div>
 
@@ -198,6 +199,24 @@ export function mountUI(root, engine) {
                     <span class="tool-name">TWIST (Z)</span>
                   </div>
                   <span class="tool-desc">Toggles Shape Light (XX)</span>
+                </button>
+
+                <!-- LENS-CHANGER BUTTON -->
+                <button type="button" class="tool-btn btn-lens" id="btn-lens" aria-label="Apply Lens-changer (H) move" hidden>
+                  <div class="btn-top">
+                    <span class="tool-icon lens-icon" aria-hidden="true">H</span>
+                    <span class="tool-name">LENS-CHANGER</span>
+                  </div>
+                  <span class="tool-desc">Changes perspective</span>
+                </button>
+
+                <!-- LINKER BUTTON -->
+                <button type="button" class="tool-btn btn-linker" id="btn-linker" aria-label="Apply Linker (CNOT) move" hidden>
+                  <div class="btn-top">
+                    <span class="tool-icon linker-icon" aria-hidden="true">🔗</span>
+                    <span class="tool-name">LINKER (CNOT)</span>
+                  </div>
+                  <span class="tool-desc">Entangles twins</span>
                 </button>
               </div>
             </div>
@@ -226,26 +245,26 @@ export function mountUI(root, engine) {
               <span class="twin-role-tag">QUBIT B</span>
               <h2 class="twin-title">Bob's Twin</h2>
             </div>
-            <span class="twin-status-pill status-locked">
-              <span class="lock-glyph" aria-hidden="true">🔒</span>
-              <span>LOCKED · CANNOT ACT</span>
+            <span class="twin-status-pill status-locked" id="bob-status-pill">
+              <span class="lock-glyph" id="bob-lock-icon" aria-hidden="true">🔒</span>
+              <span id="bob-status-text">LOCKED · CANNOT ACT</span>
             </span>
           </div>
 
           <div class="card-body">
             <div class="parcel-visual-wrapper">
               <div class="parcel-card-graphic graphic-locked" id="bob-parcel-graphic">
-                <div class="lock-scrim-overlay">
+                <div class="lock-scrim-overlay" id="bob-lock-scrim">
                   <div class="lock-big-badge">
                     <span class="lock-giant-icon" aria-hidden="true">🔒</span>
-                    <span class="lock-banner-text">LOCKED IN TRANSIT</span>
+                    <span class="lock-banner-text" id="bob-lock-banner">LOCKED IN TRANSIT</span>
                   </div>
-                  <p class="lock-reason-text">
+                  <p class="lock-reason-text" id="bob-lock-reason">
                     Bob cannot act during encoding.<br>
                     Bob will receive this twin intact.
                   </p>
                 </div>
-                <div class="parcel-body muted-body">
+                <div class="parcel-body muted-body" id="bob-parcel-body">
                   <div class="parcel-stamp stamp-stripes muted">
                     <span class="stamp-symbol">◆</span>
                     <span class="stamp-label">COLOUR</span>
@@ -296,8 +315,12 @@ export function mountUI(root, engine) {
     targetDisplay: container.querySelector("#target-display"),
     currentBits: container.querySelector("#current-bits-display"),
     targetMatchPill: container.querySelector("#target-match-pill"),
+    targetCard: container.querySelector("#target-card"),
     winBanner: container.querySelector("#win-banner"),
     winStars: container.querySelector("#win-stars"),
+    winTitle: container.querySelector("#win-title-text"),
+    winDesc: container.querySelector("#win-desc-text"),
+    blueprintSection: container.querySelector("#blueprint-section"),
 
     feedbackCard: container.querySelector("#feedback-card"),
     feedbackIcon: container.querySelector("#feedback-icon"),
@@ -315,18 +338,29 @@ export function mountUI(root, engine) {
     lightXxDesc: container.querySelector("#light-xx-desc"),
 
     cardAlice: container.querySelector("#card-alice"),
+    aliceStatusText: container.querySelector("#alice-status-text"),
     aliceGraphic: container.querySelector("#alice-parcel-graphic"),
+    aliceBody: container.querySelector("#alice-parcel-body"),
     btnFlip: container.querySelector("#btn-flip"),
     btnTwist: container.querySelector("#btn-twist"),
+    btnLens: container.querySelector("#btn-lens"),
+    btnLinker: container.querySelector("#btn-linker"),
 
     threadContainer: container.querySelector("#quantum-thread-container"),
-    cardBob: container.querySelector("#card-bob")
+    cardBob: container.querySelector("#card-bob"),
+    bobStatusText: container.querySelector("#bob-status-text"),
+    bobLockIcon: container.querySelector("#bob-lock-icon"),
+    bobStatusPill: container.querySelector("#bob-status-pill"),
+    bobLockScrim: container.querySelector("#bob-lock-scrim"),
+    bobLockBanner: container.querySelector("#bob-lock-banner"),
+    bobLockReason: container.querySelector("#bob-lock-reason"),
+    bobBody: container.querySelector("#bob-parcel-body")
   }
 
   // Animation triggers
   function triggerAliceAnimation(animationClass) {
     if (!els.aliceGraphic) return
-    els.aliceGraphic.classList.remove("anim-flip", "anim-twist")
+    els.aliceGraphic.classList.remove("anim-flip", "anim-twist", "anim-lens", "anim-linker")
     // Force DOM reflow so animation restarts cleanly
     void els.aliceGraphic.offsetWidth
     els.aliceGraphic.classList.add(animationClass)
@@ -351,6 +385,20 @@ export function mountUI(root, engine) {
     triggerAliceAnimation("anim-twist")
     if (engine && typeof engine.applyTool === "function") {
       engine.applyTool("twist", "A")
+    }
+  })
+
+  els.btnLens.addEventListener("click", () => {
+    triggerAliceAnimation("anim-lens")
+    if (engine && typeof engine.applyTool === "function") {
+      engine.applyTool("lens", "A")
+    }
+  })
+
+  els.btnLinker.addEventListener("click", () => {
+    triggerAliceAnimation("anim-linker")
+    if (engine && typeof engine.applyTool === "function") {
+      engine.applyTool("linker", "A")
     }
   })
 
@@ -390,35 +438,63 @@ export function mountUI(root, engine) {
       els.goal.textContent = state.goalLine
     }
 
-    // Target display
-    const targetBits = state.target?.bits || "10"
-    if (els.targetDisplay) {
-      els.targetDisplay.textContent = targetBits
-    }
+    // Tools visibility
+    const tools = state.toolsAvailable || []
+    if (els.btnFlip) els.btnFlip.hidden = !tools.includes("flip")
+    if (els.btnTwist) els.btnTwist.hidden = !tools.includes("twist")
+    if (els.btnLens) els.btnLens.hidden = !tools.includes("lens")
+    if (els.btnLinker) els.btnLinker.hidden = !tools.includes("linker")
 
-    // Calculate current encoded bits from lights (per physics spec 1.5):
-    // Bit 1 = Twist applied = XX differs ("differ" -> "1", "agree" -> "0")
-    // Bit 2 = Flip applied = ZZ differs ("differ" -> "1", "agree" -> "0")
-    const zzState = state.lights?.zz || "agree"
-    const xxState = state.lights?.xx || "agree"
-
-    const bit1 = xxState === "differ" ? "1" : (xxState === "agree" ? "0" : "?")
-    const bit2 = zzState === "differ" ? "1" : (zzState === "agree" ? "0" : "?")
-    const currentCode = `${bit1}${bit2}`
-
-    if (els.currentBits) {
-      els.currentBits.textContent = currentCode
-    }
-
-    const isMatch = currentCode === targetBits
-    if (els.targetMatchPill) {
-      if (isMatch) {
-        els.targetMatchPill.textContent = "Target Matched! ✓"
-        els.targetMatchPill.className = "status-pill pill-matched"
+    // Bob state modifications for Level 12 (fresh pair) vs 14 (locked)
+    const isLocked = state.lockedQubits && state.lockedQubits.includes("B")
+    if (els.bobStatusText) els.bobStatusText.textContent = isLocked ? "LOCKED · CANNOT ACT" : "INACTIVE · FRESH PARCEL"
+    if (els.bobLockIcon) els.bobLockIcon.textContent = isLocked ? "🔒" : "⏱"
+    if (els.bobStatusPill) els.bobStatusPill.className = isLocked ? "twin-status-pill status-locked" : "twin-status-pill status-inactive"
+    if (els.bobLockScrim) els.bobLockScrim.hidden = !isLocked
+    if (els.bobBody) {
+      if (isLocked) {
+        els.bobBody.classList.add("muted-body")
       } else {
-        els.targetMatchPill.textContent = "In Progress"
-        els.targetMatchPill.className = "status-pill pill-progress"
+        els.bobBody.classList.remove("muted-body")
       }
+    }
+
+    // Target display and Win text
+    if (state.target) {
+      if (els.targetCard) els.targetCard.hidden = false
+      const targetBits = state.target.bits || "10"
+      if (els.targetDisplay) els.targetDisplay.textContent = targetBits
+      if (els.winTitle) els.winTitle.textContent = `Message "${targetBits}" Encoded!`
+      if (els.winDesc) els.winDesc.textContent = "Alice encoded two facts into the pair using only her twin. Bob's twin stayed locked."
+      
+      const zzState = state.lights?.zz || "agree"
+      const xxState = state.lights?.xx || "agree"
+      const bit1 = xxState === "differ" ? "1" : (xxState === "agree" ? "0" : "?")
+      const bit2 = zzState === "differ" ? "1" : (zzState === "agree" ? "0" : "?")
+      const currentCode = `${bit1}${bit2}`
+
+      if (els.currentBits) els.currentBits.textContent = currentCode
+
+      const isMatch = currentCode === targetBits
+      if (els.targetMatchPill) {
+        if (isMatch) {
+          els.targetMatchPill.textContent = "Target Matched! ✓"
+          els.targetMatchPill.className = "status-pill pill-matched"
+        } else {
+          els.targetMatchPill.textContent = "In Progress"
+          els.targetMatchPill.className = "status-pill pill-progress"
+        }
+      }
+    } else {
+      // Level 12
+      if (els.targetCard) els.targetCard.hidden = true
+      if (els.winTitle) els.winTitle.textContent = "Twins Created!"
+      if (els.winDesc) els.winDesc.textContent = "You successfully produced two linked parcels."
+    }
+
+    // Blueprint View
+    if (els.blueprintSection) {
+      els.blueprintSection.hidden = !state.lights
     }
 
     // Win banner
