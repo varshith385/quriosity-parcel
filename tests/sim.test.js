@@ -173,6 +173,25 @@ describe('Role 1 Core: Six Core Tests', () => {
 
   // 6. H H = identity and H Z H = X
   it('6. Reversibility and interference: H H = identity and H Z H = X', () => {
+    // Assert on a state where X visibly changes it (|00> -> |10> on A, |00> -> |01> on B)
+    const s00 = [1, 0, 0, 0]
+
+    // Qubit A: |00> -> |10>
+    const xA00 = applyX(s00, 'A')
+    expect(xA00[0]).toBeCloseTo(0, 9)
+    expect(xA00[2]).toBeCloseTo(1, 9)
+    const hzhA00 = applyH(applyZ(applyH(s00, 'A'), 'A'), 'A')
+    expect(hzhA00[0]).toBeCloseTo(0, 9)
+    expect(hzhA00[2]).toBeCloseTo(1, 9)
+
+    // Qubit B: |00> -> |01>
+    const xB00 = applyX(s00, 'B')
+    expect(xB00[0]).toBeCloseTo(0, 9)
+    expect(xB00[1]).toBeCloseTo(1, 9)
+    const hzhB00 = applyH(applyZ(applyH(s00, 'B'), 'B'), 'B')
+    expect(hzhB00[0]).toBeCloseTo(0, 9)
+    expect(hzhB00[1]).toBeCloseTo(1, 9)
+
     const states = [
       zeroState(),
       dialState(37),
@@ -212,6 +231,49 @@ describe('Role 1 Core: Six Core Tests', () => {
 })
 
 describe('Role 1 Core: Extra Tests and Decision Specifications', () => {
+  it('Explicit gate truth tables: cannot be passed by identity stubs', () => {
+    // X on A of [1,0,0,0] gives [0,0,1,0]
+    const xA = applyX([1, 0, 0, 0], 'A')
+    expect(xA[0]).toBeCloseTo(0, 9)
+    expect(xA[1]).toBeCloseTo(0, 9)
+    expect(xA[2]).toBeCloseTo(1, 9)
+    expect(xA[3]).toBeCloseTo(0, 9)
+
+    // X on B of [1,0,0,0] gives [0,1,0,0]
+    const xB = applyX([1, 0, 0, 0], 'B')
+    expect(xB[0]).toBeCloseTo(0, 9)
+    expect(xB[1]).toBeCloseTo(1, 9)
+    expect(xB[2]).toBeCloseTo(0, 9)
+    expect(xB[3]).toBeCloseTo(0, 9)
+
+    // Z on A of [0,0,1,0] gives [0,0,-1,0]
+    const zA = applyZ([0, 0, 1, 0], 'A')
+    expect(zA[0]).toBeCloseTo(0, 9)
+    expect(zA[1]).toBeCloseTo(0, 9)
+    expect(zA[2]).toBeCloseTo(-1, 9)
+    expect(zA[3]).toBeCloseTo(0, 9)
+
+    // H on A of [1,0,0,0] gives [s,0,s,0]
+    const hA = applyH([1, 0, 0, 0], 'A')
+    expect(hA[0]).toBeCloseTo(S, 9)
+    expect(hA[1]).toBeCloseTo(0, 9)
+    expect(hA[2]).toBeCloseTo(S, 9)
+    expect(hA[3]).toBeCloseTo(0, 9)
+
+    // H on B of [1,0,0,0] gives [s,s,0,0]
+    const hB = applyH([1, 0, 0, 0], 'B')
+    expect(hB[0]).toBeCloseTo(S, 9)
+    expect(hB[1]).toBeCloseTo(S, 9)
+    expect(hB[2]).toBeCloseTo(0, 9)
+    expect(hB[3]).toBeCloseTo(0, 9)
+
+    // CNOT of [0,0,1,0] gives [0,0,0,1]
+    const cnot = applyCNOT([0, 0, 1, 0])
+    expect(cnot[0]).toBeCloseTo(0, 9)
+    expect(cnot[1]).toBeCloseTo(0, 9)
+    expect(cnot[2]).toBeCloseTo(0, 9)
+    expect(cnot[3]).toBeCloseTo(1, 9)
+  })
   it('Normalisation: state stays normalised after every gate and operation', () => {
     const s0 = zeroState()
     expect(normSquared(s0)).toBeCloseTo(1, 9)
