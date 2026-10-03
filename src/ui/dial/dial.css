@@ -1,0 +1,337 @@
+/* src/ui/dial/dial.css - Dial screen styles for Level 5 */
+
+:root {
+  --dial-bg: #0b1120;
+  --dial-card-bg: #1e293b;
+  --dial-card-border: #334155;
+  --dial-text-main: #f8fafc;
+  --dial-text-muted: #94a3b8;
+  --dial-accent-ud: #38bdf8;
+  --dial-accent-side: #c084fc;
+  --dial-win-bg: #064e3b;
+  --dial-win-border: #10b981;
+  --dial-win-text: #ecfdf5;
+  --dial-btn-bg: #334155;
+  --dial-btn-hover: #475569;
+  --dial-btn-text: #ffffff;
+  --dial-primary-bg: #2563eb;
+  --dial-primary-hover: #1d4ed8;
+  --dial-focus-ring: #38bdf8;
+}
+
+.dial-screen-container {
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--dial-bg);
+  color: var(--dial-text-main);
+  min-height: 100vh;
+  padding: 1.5rem 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.dial-card {
+  box-sizing: border-box;
+  background: var(--dial-card-bg);
+  border: 1px solid var(--dial-card-border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 580px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Header */
+.dial-header {
+  border-bottom: 1px solid var(--dial-card-border);
+  padding-bottom: 0.75rem;
+}
+
+.dial-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.dial-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  background: #334155;
+  color: #e2e8f0;
+}
+
+.dial-move-info {
+  font-size: 0.85rem;
+  color: var(--dial-text-muted);
+}
+
+.dial-title {
+  margin: 0 0 0.35rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--dial-text-main);
+}
+
+.dial-goal {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--dial-text-muted);
+  line-height: 1.4;
+}
+
+/* Dial graphic section */
+.dial-visual-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: #0f172a;
+  border: 1px solid var(--dial-card-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.dial-svg-wrapper {
+  width: 220px;
+  height: 220px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dial-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Slider control */
+.dial-slider-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dial-slider-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.dial-angle-display {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1rem;
+  color: #38bdf8;
+  background: #1e293b;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #334155;
+}
+
+.dial-range-input {
+  width: 100%;
+  height: 44px; /* Ensure 44px touch area */
+  cursor: pointer;
+  accent-color: var(--dial-primary-bg);
+  background: transparent;
+}
+
+/* Sureness meters section */
+.dial-meters-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #0f172a;
+  border: 1px solid var(--dial-card-border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.dial-meters-header {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--dial-text-muted);
+}
+
+.dial-meter-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.dial-meter-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.dial-meter-bar-track {
+  width: 100%;
+  height: 14px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 7px;
+  overflow: hidden;
+  position: relative;
+}
+
+.dial-meter-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.15s ease-out;
+}
+
+.dial-fill-ud {
+  background: linear-gradient(90deg, #0284c7, #38bdf8);
+}
+
+.dial-fill-side {
+  background: linear-gradient(90deg, #9333ea, #c084fc);
+}
+
+/* Looks & tally section */
+.dial-looks-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dial-btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.dial-btn {
+  box-sizing: border-box;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--dial-card-border);
+  background-color: var(--dial-btn-bg);
+  color: var(--dial-btn-text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.15s, border-color 0.15s, transform 0.05s;
+}
+
+.dial-btn:hover {
+  background-color: var(--dial-btn-hover);
+  border-color: #475569;
+}
+
+.dial-btn:active {
+  transform: scale(0.98);
+}
+
+.dial-btn:focus-visible {
+  outline: 2px solid var(--dial-focus-ring);
+  outline-offset: 2px;
+}
+
+.dial-btn-primary {
+  background-color: var(--dial-primary-bg);
+  border-color: #3b82f6;
+  width: 100%;
+  font-size: 1.05rem;
+}
+
+.dial-btn-primary:hover {
+  background-color: var(--dial-primary-hover);
+}
+
+/* Tally results box */
+.dial-tally-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.dial-tally-box {
+  background: #0f172a;
+  border: 1px solid var(--dial-card-border);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.dial-tally-title {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: var(--dial-text-muted);
+}
+
+.dial-tally-counts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Feedback & win message */
+.dial-feedback-box {
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  background: #1e293b;
+  border-left: 4px solid #64748b;
+  color: var(--dial-text-main);
+}
+
+.dial-win-box {
+  background: var(--dial-win-bg);
+  border: 1px solid var(--dial-win-border);
+  color: var(--dial-win-text);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  animation: dialPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.dial-stars {
+  color: #fbbf24;
+  font-size: 1.2rem;
+  margin-left: auto;
+  letter-spacing: 0.1em;
+}
+
+@keyframes dialPopIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
