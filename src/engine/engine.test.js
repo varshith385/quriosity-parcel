@@ -139,7 +139,7 @@ describe('Game Engine (src/engine/index.js)', () => {
     // Case 3: moveCount > par * 2 (5 moves > 4) -> 1 star
     const engine3 = createEngine({ levels: [normalizeLevel(testLevelFixture)] })
     for (let i = 0; i < 5; i++) {
-      engine3.applyTool('flip', 'A')
+      engine3.applyTool('twist', 'A')
     }
     expect(engine3.getRenderState().moveCount).toBe(5)
     engine3.submit()
