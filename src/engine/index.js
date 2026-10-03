@@ -55,7 +55,15 @@ export function safeSaveProgress(progress) {
   }
 }
 
+function isStreamLevel(level) {
+  return level?.target?.type === 'stream' && level?.mode === 'post'
+}
+
 function createInitialStateForLevel(level) {
+  if (isStreamLevel(level)) {
+    const messages = level.extra?.messages || []
+    return sim.encode(sim.makePair(), messages[0] || '00')
+  }
   if (level.start?.kind === 'pair') {
     return sim.makePair()
   }
@@ -94,6 +102,11 @@ export function createEngine(options = {}) {
   let score = null
   let progress = options.progress || safeLoadProgress()
 
+  let deliveryIndex = 0
+  let decoded = []
+  let readings = { A: null, B: null }
+  let lastAttempt = null
+
   const listeners = new Set()
 
   function checkHints() {
@@ -120,6 +133,22 @@ export function createEngine(options = {}) {
         }
         : null
 
+    let extra
+    if (isStreamLevel(currentLevel)) {
+      const messages = currentLevel.extra?.messages || []
+      extra = {
+        delivery: {
+          index: deliveryIndex,
+          total: messages.length,
+        },
+        decoded: [...decoded],
+        readings: { ...readings },
+        lastAttempt: lastAttempt ? [...lastAttempt] : null,
+      }
+    } else {
+      extra = { ...currentLevel.extra }
+    }
+
     return {
       levelId: currentLevel.id,
       title: currentLevel.title,
@@ -143,7 +172,7 @@ export function createEngine(options = {}) {
       failureCount,
       par: currentLevel.par,
       stars,
-      extra: { ...currentLevel.extra },
+      extra,
       status,
       feedback: { ...feedback },
       score: score ? { ...score } : null,
@@ -151,6 +180,11 @@ export function createEngine(options = {}) {
         completedIds: [...progress.completedIds],
         starsById: { ...progress.starsById },
       },
+      levels: levels.map((l) => ({
+        id: l.id,
+        title: l.title,
+        tier: l.tier,
+      })),
     }
   }
 
@@ -193,6 +227,11 @@ export function createEngine(options = {}) {
     score = null
     lastLens = null
     sent = false
+
+    deliveryIndex = 0
+    decoded = []
+    readings = { A: null, B: null }
+    lastAttempt = null
   }
 
   function applyTool(name, qubit) {
@@ -267,6 +306,28 @@ export function createEngine(options = {}) {
     const targetQubit = qubit || (currentPhase === 'bob' ? 'B' : 'A')
     const targetLens = lens || 'ud'
     lastLens = targetLens
+
+    if (isStreamLevel(currentLevel)) {
+      if (readings[targetQubit] !== null) {
+        feedback = {
+          kind: 'info',
+          text: 'You already read that twin in this delivery.',
+        }
+        renderState = buildRenderState()
+        notify()
+        return {
+          actor,
+          outcome: readings[targetQubit],
+          qubit: targetQubit,
+          lens: targetLens,
+          state: [...quantumState],
+        }
+      }
+      if (feedback.text === 'You already read that twin in this delivery.') {
+        feedback = { kind: null, text: '' }
+      }
+    }
+
     const rng = sim.makeRng(Date.now())
 
     let res
@@ -281,8 +342,39 @@ export function createEngine(options = {}) {
     const lensKey = targetLens === 'side' ? 'side' : 'ud'
     tally[lensKey][outcomeIndex]++
 
-    renderState = buildRenderState()
-    notify()
+    if (isStreamLevel(currentLevel)) {
+      readings[targetQubit] = outcomeIndex
+
+      if (readings.A !== null && readings.B !== null) {
+        decoded.push(`${readings.A}${readings.B}`)
+        const messages = currentLevel.extra?.messages || []
+        const total = messages.length
+
+        if (decoded.length < total) {
+          deliveryIndex++
+          readings = { A: null, B: null }
+          quantumState = sim.encode(sim.makePair(), messages[deliveryIndex])
+          renderState = buildRenderState()
+          notify()
+        } else {
+          readings = { A: null, B: null }
+          submit({ bits: [...decoded] })
+          return {
+            actor,
+            outcome: res.outcome,
+            qubit: targetQubit,
+            lens: targetLens,
+            state: [...quantumState],
+          }
+        }
+      } else {
+        renderState = buildRenderState()
+        notify()
+      }
+    } else {
+      renderState = buildRenderState()
+      notify()
+    }
 
     return {
       actor,
@@ -332,7 +424,7 @@ export function createEngine(options = {}) {
       dialT: dial ? dial.tDegrees : null,
       lens: lastLens,
       tally: { ud: [...tally.ud], side: [...tally.side] },
-      sent: null,
+      sent: isStreamLevel(currentLevel) ? currentLevel.extra?.messages : null,
     }
 
     const injected =
@@ -341,10 +433,16 @@ export function createEngine(options = {}) {
       ? injected.check(currentLevel, context, answer)
       : checkTarget(targetType, currentLevel, context, answer)
 
-
     if (result.ok) {
-
       status = 'won'
+      if (isStreamLevel(currentLevel)) {
+        lastAttempt = null
+        if (decoded.length === 0 && Array.isArray(answer?.bits)) {
+          decoded = [...answer.bits]
+          const messages = currentLevel.extra?.messages || []
+          deliveryIndex = Math.max(0, messages.length - 1)
+        }
+      }
       if (targetType === 'budget' && Array.isArray(answer?.plan)) {
         const plan = answer.plan
         const totalBits = (currentLevel.extra?.messages || []).reduce(
@@ -379,13 +477,34 @@ export function createEngine(options = {}) {
       }
     } else {
       failureCount++
-      feedback = {
-        kind: 'info',
-        text:
-          currentLevel.events?.['wrong-result'] ||
-          'Not quite right. Try again!',
+      if (isStreamLevel(currentLevel)) {
+        lastAttempt =
+          decoded.length > 0
+            ? [...decoded]
+            : Array.isArray(answer?.bits)
+              ? [...answer.bits]
+              : []
+        feedback = {
+          kind: 'info',
+          text:
+            currentLevel.events?.['wrong-result'] ||
+            'Not quite right. Try again!',
+        }
+        checkHints()
+        deliveryIndex = 0
+        decoded = []
+        readings = { A: null, B: null }
+        const messages = currentLevel.extra?.messages || []
+        quantumState = sim.encode(sim.makePair(), messages[0] || '00')
+      } else {
+        feedback = {
+          kind: 'info',
+          text:
+            currentLevel.events?.['wrong-result'] ||
+            'Not quite right. Try again!',
+        }
+        checkHints()
       }
-      checkHints()
     }
 
     renderState = buildRenderState()
