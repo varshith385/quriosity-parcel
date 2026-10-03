@@ -9,12 +9,12 @@ export function createFakeEngine(initialOverrides = {}) {
   
   let state = {
     levelId: levelId,
-    title: levelId === 12 ? "Make twins" : (levelId === 13 ? "Twins' facts" : (levelId === 15 ? "Your own codebook" : "One-hand writing")),
-    goalLine: levelId === 12 ? "Produce two linked parcels." : (levelId === 13 ? "Read the twins and complete the fact table." : (levelId === 15 ? "Map each move to its light pattern." : "Make the lights match the target message.")),
-    mode: "pair",
+    title: levelId === 12 ? "Make twins" : (levelId === 13 ? "Twins' facts" : (levelId === 15 ? "Your own codebook" : (levelId === 20 ? "Network Plan" : "One-hand writing"))),
+    goalLine: levelId === 12 ? "Produce two linked parcels." : (levelId === 13 ? "Read the twins and complete the fact table." : (levelId === 15 ? "Map each move to its light pattern." : (levelId === 20 ? "Plan a sequence to deliver the messages within budget." : "Make the lights match the target message."))),
+    mode: levelId === 20 ? "post" : "pair",
     tier: 1,
     newWords: levelId === 12 ? ["lens-changer", "linker", "entanglement"] : ["flip", "twist"],
-    target: (levelId === 12 || levelId === 13 || levelId === 15) ? null : { type: "message", bits: "10" },
+    target: (levelId === 12 || levelId === 13 || levelId === 15) ? null : (levelId === 20 ? { type: "budget" } : { type: "message", bits: "10" }),
     phase: "alice",
     state: levelId === 12 ? [1, 0, 0, 0] : [1 / Math.SQRT2, 0, 0, 1 / Math.SQRT2],
     dial: null,
@@ -34,7 +34,7 @@ export function createFakeEngine(initialOverrides = {}) {
     status: "playing",
     feedback: {
       kind: "info",
-      text: levelId === 12 ? "Apply the lens-changer and the linker." : (levelId === 13 ? "Choose a lens and read both twins." : (levelId === 15 ? "Try moves to fill the codebook." : "Alice acts on her twin only. Bob's twin is locked."))
+      text: levelId === 12 ? "Apply the lens-changer and the linker." : (levelId === 13 ? "Choose a lens and read both twins." : (levelId === 15 ? "Try moves to fill the codebook." : (levelId === 20 ? "Create a plan." : "Alice acts on her twin only. Bob's twin is locked.")))
     },
     score: null,
     progress: {
@@ -61,6 +61,14 @@ export function createFakeEngine(initialOverrides = {}) {
     state.lenses = ["ud"]
   } else if (levelId === 14) {
     state.lenses = ["ud", "side"]
+  } else if (levelId === 20) {
+    state.extra.messages = [
+      { id: "m1", bits: "1" },
+      { id: "m2", bits: "10" },
+      { id: "m3", bits: "101" },
+      { id: "m4", bits: "1011" }
+    ]
+    state.extra.budget = { parcels: 7, twins: 3 }
   }
 
   const subscribers = new Set()
@@ -222,6 +230,17 @@ export function createFakeEngine(initialOverrides = {}) {
         state.failureCount = (state.failureCount || 0) + 1
         state.feedback = { kind: "blocked", text: "Some patterns are wrong." }
       }
+    } else if (state.levelId === 20) {
+      if (answer && answer.plan) {
+        state.status = "won"
+        state.stars = 3
+        state.score = {
+          bitsPerParcel: 1.43,
+          parcelsUsed: answer.plan.length,
+          twinsLeft: 3 - answer.plan.filter(r => r.useTwin).length
+        }
+        state.feedback = { kind: "info", text: "Plan executed successfully!" }
+      }
     }
     notify()
   }
@@ -246,7 +265,7 @@ export function createFakeEngine(initialOverrides = {}) {
       state.stars = 0
       state.feedback = {
         kind: "info",
-        text: "Reset: Alice acts on her twin only. Bob's twin is locked."
+        text: state.levelId === 13 ? "Reset: Choose a lens and read both twins." : (state.levelId === 15 ? "Reset: Try moves to fill the codebook." : (state.levelId === 20 ? "Reset: Create a plan." : "Reset: Alice acts on her twin only. Bob's twin is locked."))
       }
     }
     notify()

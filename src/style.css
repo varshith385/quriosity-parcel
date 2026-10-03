@@ -1396,3 +1396,193 @@ body {
     min-height: 52px;
   }
 }
+
+/* ==========================================================================
+   LEVEL 20 PLANNER UI
+   ========================================================================== */
+.planner-section {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.planner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding-bottom: 1rem;
+}
+
+.planner-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.budget-display {
+  display: flex;
+  gap: 1.5rem;
+  font-weight: 700;
+}
+
+.budget-item {
+  background: var(--color-bg-elevated);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+}
+
+.budget-warning {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid #dc2626;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(220, 38, 38, 0.1) 10px, rgba(220, 38, 38, 0.1) 20px);
+}
+
+.planner-messages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+}
+
+.msg-progress {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-sm);
+}
+
+.planner-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.planner-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--color-bg-elevated);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  flex-wrap: wrap;
+}
+
+.planner-row .row-num {
+  font-weight: bold;
+  color: var(--color-text-muted);
+  width: 1.5rem;
+}
+
+.planner-row label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.sel-msg, .inp-chunk {
+  background: var(--color-bg-base);
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border-strong);
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+}
+
+.inp-chunk {
+  width: 80px;
+}
+
+.btn-remove {
+  margin-left: auto;
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  border: 1px solid #991b1b;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-remove:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.planner-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn-add-row, .btn-submit-plan {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: bold;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.btn-add-row {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-main);
+  border-color: var(--color-border-strong);
+}
+
+.btn-add-row:hover {
+  background: var(--color-border-subtle);
+}
+
+.btn-submit-plan {
+  background: var(--color-alice-active);
+  color: #000;
+}
+
+.btn-submit-plan:hover {
+  background: #059669;
+}
+
+.score-card {
+  margin-top: 2rem;
+  background: var(--color-bg-blueprint);
+  border: 1px solid var(--color-border-focus);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.score-card h3 {
+  margin-top: 0;
+  color: #7dd3fc;
+}
+
+@media (max-width: 768px) {
+  .planner-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .btn-remove {
+    margin-left: 0;
+    width: 100%;
+  }
+  .planner-actions {
+    flex-direction: column;
+  }
+}

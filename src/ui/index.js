@@ -1,7 +1,7 @@
 /**
  * UI Renderer for Level 14 (and Levels 12, 13, 15)
  * Export exactly: mountUI(root, engine)
- * 
+ *
  * Rules:
  * - Reads engine.getRenderState()
  * - Calls only allowed engine actions: engine.applyTool(name, qubit), engine.reset()
@@ -24,17 +24,23 @@ export function mountUI(root, initialEngine) {
   let currentTableLevelId = null
 
   function init() {
+    let currentPlan = []
+    let currentMessages = []
+    let currentBudget = { parcels: 7, twins: 3 }
+    currentTableLevelId = null
+
     // Build the static shell once
     container.innerHTML = `
       <div class="parcel-game-app" id="level14-app">
         <!-- DEV PREVIEW SELECTOR -->
         <div style="background:#ffea00; color:#000; padding:4px 8px; font-weight:bold; font-size:12px; text-align:center;">
-          DEV: Preview Level 
+          DEV: Preview Level
           <select id="dev-level-select" style="margin-left: 8px;">
             <option value="12">Level 12 (Make twins)</option>
             <option value="13">Level 13 (Twins' facts)</option>
             <option value="14" selected>Level 14 (One-hand writing)</option>
             <option value="15">Level 15 (Superdense)</option>
+            <option value="20">Level 20 (Network Plan)</option>
           </select>
         </div>
 
@@ -64,17 +70,14 @@ export function mountUI(root, initialEngine) {
               <span class="target-tag">MISSION GOAL</span>
               <div class="target-value-box">
                 <span class="target-label">Target:</span>
-                <span class="target-code" id="target-display">--</span>
+                <span class="target-code" id="target-display"></span>
               </div>
-              <div class="target-rule-hint">
-                <span class="rule-chip"><span class="chip-shape">⬡</span> Bit 1 (Shape) = <strong>1 (Differ)</strong></span>
-                <span class="rule-chip"><span class="chip-shape">◆</span> Bit 2 (Colour) = <strong>0 (Agree)</strong></span>
-              </div>
+              <div class="target-rule-hint" id="target-rule-hint"></div>
             </div>
             <div class="target-status-box" id="target-status-box">
               <span class="current-label">Current Pair Message:</span>
-              <span class="current-value" id="current-bits-display">00</span>
-              <span class="status-pill" id="target-match-pill">In Progress</span>
+              <span class="current-value" id="current-bits-display"></span>
+              <span class="status-pill" id="target-match-pill"></span>
             </div>
           </div>
         </header>
@@ -82,10 +85,10 @@ export function mountUI(root, initialEngine) {
         <!-- VICTORY NOTIFICATION BANNER -->
         <div class="win-banner" id="win-banner" hidden>
           <div class="win-content">
-            <div class="win-stars" id="win-stars">★★★</div>
+            <div class="win-stars" id="win-stars"></div>
             <div class="win-text-group">
-              <h2 class="win-title" id="win-title-text">Success!</h2>
-              <p class="win-desc" id="win-desc-text">You completed the level.</p>
+              <h2 class="win-title" id="win-title-text"></h2>
+              <p class="win-desc" id="win-desc-text"></p>
             </div>
           </div>
         </div>
@@ -106,11 +109,9 @@ export function mountUI(root, initialEngine) {
           <div class="blueprint-header">
             <div class="blueprint-title-row">
               <span class="blueprint-tag">📐 BLUEPRINT VIEW</span>
-              <h2 id="blueprint-heading" class="blueprint-title">Pair Facts (Global Measurement)</h2>
+              <h2 id="blueprint-heading" class="blueprint-title"></h2>
             </div>
-            <p class="blueprint-caption">
-              These lights show the relationship between both twins together. Neither twin alone reveals either fact.
-            </p>
+            <p class="blueprint-caption" id="blueprint-caption"></p>
           </div>
 
           <div class="lights-grid">
@@ -126,13 +127,11 @@ export function mountUI(root, initialEngine) {
                   <span class="light-subtext">ZZ Parity · Bit 2 (Flip)</span>
                 </div>
                 <div class="light-state-badge" id="light-zz-badge">
-                  <span class="state-icon" id="light-zz-icon">=</span>
-                  <span class="state-text" id="light-zz-text">AGREE</span>
+                  <span class="state-icon" id="light-zz-icon"></span>
+                  <span class="state-text" id="light-zz-text"></span>
                 </div>
               </div>
-              <div class="light-explanation" id="light-zz-desc">
-                Colours agree when both read up-down (=)
-              </div>
+              <div class="light-explanation" id="light-zz-desc"></div>
               <div class="light-control-tag">
                 Controlled by: <strong>Flip (X)</strong>
               </div>
@@ -150,13 +149,11 @@ export function mountUI(root, initialEngine) {
                   <span class="light-subtext">XX Parity · Bit 1 (Twist)</span>
                 </div>
                 <div class="light-state-badge" id="light-xx-badge">
-                  <span class="state-icon" id="light-xx-icon">=</span>
-                  <span class="state-text" id="light-xx-text">AGREE</span>
+                  <span class="state-icon" id="light-xx-icon"></span>
+                  <span class="state-text" id="light-xx-text"></span>
                 </div>
               </div>
-              <div class="light-explanation" id="light-xx-desc">
-                Shapes agree when both read sideways (=)
-              </div>
+              <div class="light-explanation" id="light-xx-desc"></div>
               <div class="light-control-tag">
                 Controlled by: <strong>Twist (Z)</strong>
               </div>
@@ -165,7 +162,7 @@ export function mountUI(root, initialEngine) {
         </section>
 
         <!-- TWIN CARDS & ENTANGLEMENT THREAD -->
-        <section class="twins-section" aria-label="Quantum Twin Parcels">
+        <section class="twins-section" id="twins-section" aria-label="Quantum Twin Parcels">
           <!-- ALICE'S TWIN -->
           <article class="twin-card twin-alice" id="card-alice">
             <div class="twin-card-header">
@@ -198,7 +195,7 @@ export function mountUI(root, initialEngine) {
               </div>
 
               <!-- ALICE'S CONTROLS -->
-              <div class="twin-controls-area">
+              <div class="twin-controls-area" id="alice-controls-area">
                 <span class="controls-label">Alice's Available Actions:</span>
                 <div class="buttons-grid">
                   <button type="button" class="tool-btn btn-flip" id="btn-flip" aria-label="Apply Flip (X) move to Alice's twin" hidden>
@@ -245,7 +242,7 @@ export function mountUI(root, initialEngine) {
             </div>
             <div class="thread-badge">
               <span class="thread-icon" aria-hidden="true">☍</span>
-              <span class="thread-text">Entangled Pair (Thread active)</span>
+              <span class="thread-text" id="thread-text">Not Linked</span>
             </div>
           </div>
 
@@ -290,7 +287,7 @@ export function mountUI(root, initialEngine) {
               </div>
 
               <!-- BOB'S DISABLED CONTROLS -->
-              <div class="twin-controls-area">
+              <div class="twin-controls-area" id="bob-controls-area" hidden>
                 <span class="controls-label">Bob's Controls (Disabled):</span>
                 <div class="buttons-grid">
                   <button type="button" class="tool-btn btn-disabled" id="btn-bob-tool1" disabled aria-disabled="true">
@@ -322,7 +319,7 @@ export function mountUI(root, initialEngine) {
               <label class="lens-radio-label"><input type="radio" name="lens-select" value="side"> Sideways (Shape)</label>
             </div>
             <button type="button" class="btn-read-twins" id="btn-read-twins">Read Both Twins</button>
-            
+
             <div class="tally-display" id="tally-display" aria-live="polite"></div>
           </div>
         </section>
@@ -337,6 +334,36 @@ export function mountUI(root, initialEngine) {
             <div class="table-actions">
               <button type="button" class="btn-submit" id="btn-submit-table">Submit</button>
             </div>
+          </div>
+        </section>
+
+        <!-- LEVEL 20 PLANNER SECTION -->
+        <section class="planner-section" id="planner-section" hidden>
+          <div class="planner-header">
+            <h2>Network Plan</h2>
+            <div class="budget-display">
+              <span class="budget-item" id="budget-parcels">Parcels: 0/7</span>
+              <span class="budget-item" id="budget-twins">Twins: 0/3</span>
+            </div>
+            <div id="budget-warning" class="budget-warning" hidden>
+              <span aria-hidden="true">⚠️</span> <span id="budget-warning-text"></span>
+            </div>
+          </div>
+
+          <div class="planner-messages" id="planner-messages">
+          </div>
+
+          <div class="planner-rows" id="planner-rows">
+          </div>
+
+          <div class="planner-actions">
+            <button type="button" class="btn-add-row" id="btn-add-row">+ Add Parcel</button>
+            <button type="button" class="btn-submit-plan" id="btn-submit-plan">Submit Plan</button>
+          </div>
+
+          <div id="planner-score-card" class="score-card" hidden>
+            <h3>Final Score</h3>
+            <div id="score-details"></div>
           </div>
         </section>
       </div>
@@ -379,6 +406,7 @@ export function mountUI(root, initialEngine) {
       aliceStatusText: container.querySelector("#alice-status-text"),
       aliceGraphic: container.querySelector("#alice-parcel-graphic"),
       aliceBody: container.querySelector("#alice-parcel-body"),
+      aliceControlsArea: container.querySelector("#alice-controls-area"),
       btnFlip: container.querySelector("#btn-flip"),
       btnTwist: container.querySelector("#btn-twist"),
       btnLens: container.querySelector("#btn-lens"),
@@ -403,7 +431,106 @@ export function mountUI(root, initialEngine) {
       tableSection: container.querySelector("#table-section"),
       tableTitle: container.querySelector("#table-title"),
       tableBody: container.querySelector("#table-body"),
-      btnSubmitTable: container.querySelector("#btn-submit-table")
+      btnSubmitTable: container.querySelector("#btn-submit-table"),
+      twinsSection: container.querySelector("#twins-section"),
+      plannerSection: container.querySelector("#planner-section"),
+      budgetParcels: container.querySelector("#budget-parcels"),
+      budgetTwins: container.querySelector("#budget-twins"),
+      budgetWarning: container.querySelector("#budget-warning"),
+      budgetWarningText: container.querySelector("#budget-warning-text"),
+      plannerMessages: container.querySelector("#planner-messages"),
+      plannerRows: container.querySelector("#planner-rows"),
+      btnAddRow: container.querySelector("#btn-add-row"),
+      btnSubmitPlan: container.querySelector("#btn-submit-plan"),
+      plannerScoreCard: container.querySelector("#planner-score-card"),
+      scoreDetails: container.querySelector("#score-details"),
+      bobControlsArea: container.querySelector("#bob-controls-area"),
+      threadText: container.querySelector("#thread-text"),
+      blueprintHeading: container.querySelector("#blueprint-heading"),
+      blueprintCaption: container.querySelector("#blueprint-caption")
+    }
+
+    function renderPlanner() {
+      if (!els.plannerSection) return
+      const parcelsUsed = currentPlan.length
+      const twinsUsed = currentPlan.filter(r => r.useTwin).length
+
+      els.budgetParcels.textContent = `Parcels: ${parcelsUsed}/${currentBudget.parcels}`
+      els.budgetTwins.textContent = `Twins: ${twinsUsed}/${currentBudget.twins}`
+
+      if (parcelsUsed > currentBudget.parcels || twinsUsed > currentBudget.twins) {
+        els.budgetWarning.hidden = false
+        if (parcelsUsed > currentBudget.parcels) els.budgetWarningText.textContent = "Over parcel budget"
+        else if (twinsUsed > currentBudget.twins) els.budgetWarningText.textContent = "Over twin budget"
+      } else {
+        els.budgetWarning.hidden = true
+      }
+
+      let msgHtml = ""
+      currentMessages.forEach(msg => {
+        const bitsCovered = currentPlan.filter(r => r.messageId === msg.id).reduce((sum, r) => sum + r.chunk.length, 0)
+        msgHtml += `<div class="msg-progress"><strong>${msg.id}:</strong> ${bitsCovered}/${msg.bits.length} bits (${msg.bits})</div>`
+      })
+      els.plannerMessages.innerHTML = msgHtml
+
+      let rowsHtml = ""
+      currentPlan.forEach((row, idx) => {
+        let msgOptions = currentMessages.map(m => `<option value="${m.id}" ${row.messageId === m.id ? "selected" : ""}>${m.id}</option>`).join("")
+        rowsHtml += `
+          <div class="planner-row" data-index="${idx}">
+            <span class="row-num">${idx + 1}.</span>
+            <label>Message: <select class="sel-msg">${msgOptions}</select></label>
+            <label>Chunk: <input type="text" class="inp-chunk" value="${row.chunk}" placeholder="e.g. 10"></label>
+            <label><input type="checkbox" class="chk-twin" ${row.useTwin ? "checked" : ""}> Use Twin (2 bits)</label>
+            <button type="button" class="btn-remove">Remove</button>
+          </div>
+        `
+      })
+      els.plannerRows.innerHTML = rowsHtml
+    }
+
+    if (els.btnAddRow) {
+      els.btnAddRow.addEventListener("click", () => {
+        currentPlan.push({ messageId: currentMessages[0]?.id || "m1", chunk: "", useTwin: false })
+        renderPlanner()
+      })
+    }
+
+    if (els.plannerRows) {
+      els.plannerRows.addEventListener("change", (e) => {
+        const rowDiv = e.target.closest(".planner-row")
+        if (!rowDiv) return
+        const idx = parseInt(rowDiv.dataset.index, 10)
+        if (e.target.classList.contains("sel-msg")) currentPlan[idx].messageId = e.target.value
+        if (e.target.classList.contains("chk-twin")) currentPlan[idx].useTwin = e.target.checked
+        renderPlanner()
+      })
+      els.plannerRows.addEventListener("input", (e) => {
+        if (e.target.classList.contains("inp-chunk")) {
+          const rowDiv = e.target.closest(".planner-row")
+          if (!rowDiv) return
+          const idx = parseInt(rowDiv.dataset.index, 10)
+          currentPlan[idx].chunk = e.target.value
+          renderPlanner()
+        }
+      })
+      els.plannerRows.addEventListener("click", (e) => {
+        if (e.target.classList.contains("btn-remove")) {
+          const rowDiv = e.target.closest(".planner-row")
+          if (!rowDiv) return
+          const idx = parseInt(rowDiv.dataset.index, 10)
+          currentPlan.splice(idx, 1)
+          renderPlanner()
+        }
+      })
+    }
+
+    if (els.btnSubmitPlan) {
+      els.btnSubmitPlan.addEventListener("click", () => {
+        if (currentEngine && typeof currentEngine.submit === "function") {
+          currentEngine.submit({ plan: currentPlan })
+        }
+      })
     }
 
     // Dev selector remount logic
@@ -416,16 +543,16 @@ export function mountUI(root, initialEngine) {
           devSelect.value = initialState.levelId.toString()
         }
       }
-      
+
       devSelect.addEventListener("change", (e) => {
         const newLevel = parseInt(e.target.value, 10)
-        
+
         // Clean up old subscriptions
         if (unsubscribe) {
           unsubscribe()
           unsubscribe = null
         }
-        
+
         currentEngine = createFakeEngine({ levelId: newLevel })
         // Re-init UI completely
         init()
@@ -477,6 +604,7 @@ export function mountUI(root, initialEngine) {
     })
 
     els.btnReset.addEventListener("click", () => {
+      currentPlan = []
       if (currentEngine && typeof currentEngine.reset === "function") {
         currentEngine.reset()
       }
@@ -488,7 +616,7 @@ export function mountUI(root, initialEngine) {
         els.lensRadios.forEach(radio => {
           if (radio.checked) selectedLens = radio.value
         })
-        
+
         if (currentEngine && typeof currentEngine.look === "function") {
           triggerAliceAnimation("anim-lens")
           currentEngine.look("A", selectedLens)
@@ -500,13 +628,13 @@ export function mountUI(root, initialEngine) {
     if (els.btnSubmitTable) {
       els.btnSubmitTable.addEventListener("click", () => {
         if (!currentEngine || typeof currentEngine.submit !== "function") return
-        
+
         const selects = els.tableBody.querySelectorAll("select")
         const cells = {}
         selects.forEach(select => {
           cells[select.dataset.id] = select.value
         })
-        
+
         currentEngine.submit({ cells })
       })
     }
@@ -522,68 +650,77 @@ export function mountUI(root, initialEngine) {
     function render(state) {
       if (!state) return
 
-      if (els.levelBadge) {
-        els.levelBadge.textContent = state.levelId ? `LEVEL ${state.levelId}` : "LEVEL 14"
-      }
-      if (els.phaseBadge) {
-        els.phaseBadge.textContent = `PHASE: ${(state.phase || "alice").toUpperCase()}`
-      }
+      // --- SHARED SHELL ---
+      if (els.levelBadge) els.levelBadge.textContent = state.levelId ? `LEVEL ${state.levelId}` : "LEVEL 14"
+      if (els.phaseBadge) els.phaseBadge.textContent = `PHASE: ${(state.phase || "alice").toUpperCase()}`
       if (els.moves) {
         const parText = state.par !== undefined ? ` / Par: ${state.par}` : ""
         els.moves.textContent = `Moves: ${state.moveCount || 0}${parText}`
       }
-      if (els.title && state.title) {
-        els.title.textContent = state.title
-      }
-      if (els.goal && state.goalLine) {
-        els.goal.textContent = state.goalLine
-      }
+      if (els.title && state.title) els.title.textContent = state.title
+      if (els.goal && state.goalLine) els.goal.textContent = state.goalLine
 
-      const tools = state.toolsAvailable || []
-      if (els.btnFlip) els.btnFlip.hidden = !tools.includes("flip")
-      if (els.btnTwist) els.btnTwist.hidden = !tools.includes("twist")
-      if (els.btnLens) els.btnLens.hidden = !tools.includes("lens")
-      if (els.btnLinker) els.btnLinker.hidden = !tools.includes("linker")
-
-      const isLocked = state.lockedQubits && state.lockedQubits.includes("B")
-      if (els.bobStatusText) els.bobStatusText.textContent = isLocked ? "LOCKED · CANNOT ACT" : "INACTIVE · FRESH PARCEL"
-      if (els.bobLockIcon) els.bobLockIcon.textContent = isLocked ? "🔒" : "⏱"
-      if (els.bobStatusPill) els.bobStatusPill.className = isLocked ? "twin-status-pill status-locked" : "twin-status-pill status-inactive"
-      if (els.bobLockScrim) els.bobLockScrim.hidden = !isLocked
-      
-      if (els.cardBob) {
-        if (isLocked) {
-          els.cardBob.classList.add("locked-card")
-          els.cardBob.setAttribute("aria-label", "Bob's Twin Parcel (Locked)")
-        } else {
-          els.cardBob.classList.remove("locked-card")
-          els.cardBob.setAttribute("aria-label", "Bob's Twin Parcel (Fresh)")
-        }
+      const feedback = state.feedback || { kind: "info", text: "" }
+      const kind = feedback.kind || "info"
+      if (els.feedbackCard) els.feedbackCard.className = `feedback-card feedback-${kind}`
+      if (els.feedbackKindText) els.feedbackKindText.textContent = kind.toUpperCase()
+      if (els.feedbackIcon) {
+        if (kind === "blocked") els.feedbackIcon.textContent = "⛔"
+        else if (kind === "hint") els.feedbackIcon.textContent = "💡"
+        else els.feedbackIcon.textContent = "ℹ️"
       }
+      if (els.feedbackText) els.feedbackText.textContent = feedback.text || "Alice can act on her twin. Bob's twin is locked."
 
-      if (els.bobGraphic) {
-        if (isLocked) {
-          els.bobGraphic.classList.add("graphic-locked")
-        } else {
-          els.bobGraphic.classList.remove("graphic-locked")
-        }
+      // --- RESET VISIBILITY TO NEUTRAL ---
+      if (els.targetCard) els.targetCard.hidden = true
+      if (els.winBanner) els.winBanner.hidden = true
+      if (els.blueprintSection) els.blueprintSection.hidden = true
+      if (els.twinsSection) els.twinsSection.hidden = true
+      if (els.measurementSection) els.measurementSection.hidden = true
+      if (els.tableSection) els.tableSection.hidden = true
+      if (els.plannerSection) els.plannerSection.hidden = true
+
+      // --- ROUTER ---
+      if (state.levelId === 12) {
+        renderLevel12(state)
+      } else if (state.levelId === 13) {
+        renderLevel13(state)
+      } else if (state.levelId === 14) {
+        renderLevel14(state)
+      } else if (state.levelId === 15) {
+        renderLevel15(state)
+      } else if (state.levelId === 20) {
+        renderLevel20(state)
+      } else {
+        renderLevel14(state) // Fallback
       }
+    }
 
-      if (els.bobBody) {
-        if (isLocked) {
-          els.bobBody.classList.add("muted-body")
-        } else {
-          els.bobBody.classList.remove("muted-body")
-        }
+    function renderWinBanner(state) {
+      if (state.status === "won") {
+        if (els.winBanner) els.winBanner.hidden = false
+        const starsCount = state.stars || (state.moveCount <= state.par ? 3 : 2)
+        if (els.winStars) els.winStars.textContent = "★".repeat(starsCount) + "☆".repeat(Math.max(0, 3 - starsCount))
       }
+    }
 
-      if (state.target) {
-        if (els.targetCard) els.targetCard.hidden = false
+    function renderTargetCard(state) {
+      if (state.target && els.targetCard) {
+        els.targetCard.hidden = false
         const targetBits = state.target.bits || "10"
         if (els.targetDisplay) els.targetDisplay.textContent = targetBits
-        if (els.winTitle) els.winTitle.textContent = `Message "${targetBits}" Encoded!`
-        if (els.winDesc) els.winDesc.textContent = "Alice encoded two facts into the pair using only her twin. Bob's twin stayed locked."
-        
+
+        // Dynamically inject the rule hint
+        const hintEl = container.querySelector("#target-rule-hint")
+        if (hintEl) {
+          const bit1Val = targetBits[0] === "1" ? "1 (Differ)" : "0 (Agree)"
+          const bit2Val = targetBits[1] === "1" ? "1 (Differ)" : "0 (Agree)"
+          hintEl.innerHTML = `
+            <span class="rule-chip"><span class="chip-shape">⬡</span> Bit 1 (Shape) = <strong>${bit1Val}</strong></span>
+            <span class="rule-chip"><span class="chip-shape">◆</span> Bit 2 (Colour) = <strong>${bit2Val}</strong></span>
+          `
+        }
+
         const zzState = state.lights?.zz || "agree"
         const xxState = state.lights?.xx || "agree"
         const bit1 = xxState === "differ" ? "1" : (xxState === "agree" ? "0" : "?")
@@ -602,44 +739,30 @@ export function mountUI(root, initialEngine) {
             els.targetMatchPill.className = "status-pill pill-progress"
           }
         }
-      } else {
-        if (els.targetCard) els.targetCard.hidden = true
-        if (els.winTitle) els.winTitle.textContent = "Success!"
-        if (els.winDesc) els.winDesc.textContent = "You successfully completed the level."
-      }
 
-      if (els.blueprintSection) {
-        els.blueprintSection.hidden = !state.lights
-      }
-
-      if (els.winBanner) {
         if (state.status === "won") {
-          els.winBanner.hidden = false
-          const starsCount = state.stars || (state.moveCount <= state.par ? 3 : 2)
-          els.winStars.textContent = "★".repeat(starsCount) + "☆".repeat(Math.max(0, 3 - starsCount))
-        } else {
-          els.winBanner.hidden = true
+          if (els.winTitle) els.winTitle.textContent = `Message "${targetBits}" Encoded!`
+          if (els.winDesc) els.winDesc.textContent = "Alice encoded two facts into the pair using only her twin. Bob's twin stayed locked."
+        }
+      }
+    }
+
+    function renderBlueprint(state, mode) {
+      if (!state.lights || !els.blueprintSection) return
+      els.blueprintSection.hidden = false
+
+      if (mode === "codebook") {
+        if (els.blueprintHeading) els.blueprintHeading.textContent = "Codebook Light Pattern"
+        if (els.blueprintCaption) els.blueprintCaption.hidden = true
+      } else {
+        if (els.blueprintHeading) els.blueprintHeading.textContent = "Pair Facts (Global Measurement)"
+        if (els.blueprintCaption) {
+          els.blueprintCaption.hidden = false
+          els.blueprintCaption.textContent = "These lights show the relationship between both twins together. Neither twin alone reveals either fact."
         }
       }
 
-      const feedback = state.feedback || { kind: "info", text: "" }
-      const kind = feedback.kind || "info"
-      if (els.feedbackCard) {
-        els.feedbackCard.className = `feedback-card feedback-${kind}`
-      }
-      if (els.feedbackKindText) {
-        els.feedbackKindText.textContent = kind.toUpperCase()
-      }
-      if (els.feedbackIcon) {
-        if (kind === "blocked") els.feedbackIcon.textContent = "⛔"
-        else if (kind === "hint") els.feedbackIcon.textContent = "💡"
-        else els.feedbackIcon.textContent = "ℹ️"
-      }
-      if (els.feedbackText) {
-        els.feedbackText.textContent = feedback.text || "Alice can act on her twin. Bob's twin is locked."
-      }
-
-      const zzState = state.lights?.zz || "agree"
+      const zzState = state.lights.zz || "agree"
       if (els.lightPanelZz) els.lightPanelZz.setAttribute("data-state", zzState)
       if (els.lightZzText) els.lightZzText.textContent = zzState.toUpperCase()
       if (els.lightZzIcon) els.lightZzIcon.textContent = zzState === "agree" ? "=" : (zzState === "differ" ? "≠" : "?")
@@ -649,7 +772,7 @@ export function mountUI(root, initialEngine) {
         else els.lightZzDesc.textContent = "Colours unsure (?)"
       }
 
-      const xxState = state.lights?.xx || "agree"
+      const xxState = state.lights.xx || "agree"
       if (els.lightPanelXx) els.lightPanelXx.setAttribute("data-state", xxState)
       if (els.lightXxText) els.lightXxText.textContent = xxState.toUpperCase()
       if (els.lightXxIcon) els.lightXxIcon.textContent = xxState === "agree" ? "=" : (xxState === "differ" ? "≠" : "?")
@@ -658,79 +781,187 @@ export function mountUI(root, initialEngine) {
         else if (xxState === "differ") els.lightXxDesc.textContent = "Shapes differ when both read sideways (≠) · Bit 1 = 1"
         else els.lightXxDesc.textContent = "Shapes unsure (?)"
       }
+    }
 
+    function renderPairCards(state) {
+      if (!els.twinsSection) return
+      els.twinsSection.hidden = false
+
+      // Tools
+      const tools = state.toolsAvailable || []
+      if (els.aliceControlsArea) {
+        els.aliceControlsArea.hidden = tools.length === 0
+      }
+      if (els.btnFlip) els.btnFlip.hidden = !tools.includes("flip")
+      if (els.btnTwist) els.btnTwist.hidden = !tools.includes("twist")
+      if (els.btnLens) els.btnLens.hidden = !tools.includes("lens")
+      if (els.btnLinker) els.btnLinker.hidden = !tools.includes("linker")
+
+      // Bob lock status
+      const isLocked = state.lockedQubits && state.lockedQubits.includes("B")
+      if (els.bobStatusText) els.bobStatusText.textContent = isLocked ? "LOCKED · CANNOT ACT" : "INACTIVE · FRESH PARCEL"
+      if (els.bobLockIcon) els.bobLockIcon.textContent = isLocked ? "🔒" : "⏱"
+      if (els.bobStatusPill) els.bobStatusPill.className = isLocked ? "twin-status-pill status-locked" : "twin-status-pill status-inactive"
+      if (els.bobLockScrim) els.bobLockScrim.hidden = !isLocked
+      if (els.bobControlsArea) els.bobControlsArea.hidden = !isLocked
+
+      if (els.cardBob) {
+        if (isLocked) {
+          els.cardBob.classList.add("locked-card")
+          els.cardBob.setAttribute("aria-label", "Bob's Twin Parcel (Locked)")
+        } else {
+          els.cardBob.classList.remove("locked-card")
+          els.cardBob.setAttribute("aria-label", "Bob's Twin Parcel (Fresh)")
+        }
+      }
+
+      if (els.bobGraphic) {
+        if (isLocked) els.bobGraphic.classList.add("graphic-locked")
+        else els.bobGraphic.classList.remove("graphic-locked")
+      }
+
+      if (els.bobBody) {
+        if (isLocked) els.bobBody.classList.add("muted-body")
+        else els.bobBody.classList.remove("muted-body")
+      }
+
+      // Thread
       if (els.threadContainer) {
         if (state.thread) {
           els.threadContainer.classList.add("thread-active")
           els.threadContainer.classList.remove("thread-disabled")
+          if (els.threadText) els.threadText.textContent = "Entangled Pair (Thread active)"
         } else {
           els.threadContainer.classList.remove("thread-active")
           els.threadContainer.classList.add("thread-disabled")
+          if (els.threadText) els.threadText.textContent = "Not Linked"
         }
       }
+    }
 
-      let extra = state.extra || {}
-      let tableData = extra.factTable || extra.codebook
-      if (tableData && tableData.length > 0) {
-        if (els.tableSection) els.tableSection.hidden = false
-        if (els.tableTitle) els.tableTitle.textContent = extra.factTable ? "Fact Table" : "Codebook"
-        
-        if (currentTableLevelId !== state.levelId) {
-          currentTableLevelId = state.levelId
-          if (els.tableBody) {
-            let html = ""
-            const isFact = !!extra.factTable
-            tableData.forEach(row => {
-              let optionsHtml = `<option value="">-- select --</option>`
-              if (isFact) {
-                optionsHtml += `
-                  <option value="agree">Agree</option>
-                  <option value="differ">Differ</option>
-                  <option value="random">Random</option>
-                `
-              } else {
-                optionsHtml += `
-                  <option value="00">00 (Agree, Agree)</option>
-                  <option value="01">01 (Agree, Differ)</option>
-                  <option value="10">10 (Differ, Agree)</option>
-                  <option value="11">11 (Differ, Differ)</option>
-                `
-              }
-              html += `
-                <div class="table-row">
-                  <label class="row-label" for="select-${row.id}">${row.label}</label>
-                  <select class="row-select" id="select-${row.id}" data-id="${row.id}">
-                    ${optionsHtml}
-                  </select>
-                </div>
+    function renderTable(state) {
+      const extra = state.extra || {}
+      const tableData = extra.factTable || extra.codebook
+      if (!tableData || tableData.length === 0) return
+
+      if (els.tableSection) els.tableSection.hidden = false
+      if (els.tableTitle) els.tableTitle.textContent = extra.factTable ? "Fact Table" : "Codebook"
+
+      if (currentTableLevelId !== state.levelId) {
+        currentTableLevelId = state.levelId
+        if (els.tableBody) {
+          let html = ""
+          const isFact = !!extra.factTable
+          tableData.forEach(row => {
+            let optionsHtml = `<option value="">-- select --</option>`
+            if (isFact) {
+              optionsHtml += `
+                <option value="agree">Agree</option>
+                <option value="differ">Differ</option>
+                <option value="random">Random</option>
               `
-            })
-            els.tableBody.innerHTML = html
-          }
+            } else {
+              optionsHtml += `
+                <option value="00">00 (Agree, Agree)</option>
+                <option value="01">01 (Agree, Differ)</option>
+                <option value="10">10 (Differ, Agree)</option>
+                <option value="11">11 (Differ, Differ)</option>
+              `
+            }
+            html += `
+              <div class="table-row">
+                <label class="row-label" for="select-${row.id}">${row.label}</label>
+                <select class="row-select" id="select-${row.id}" data-id="${row.id}">
+                  ${optionsHtml}
+                </select>
+              </div>
+            `
+          })
+          els.tableBody.innerHTML = html
         }
-      } else {
-        if (els.tableSection) els.tableSection.hidden = true
-        currentTableLevelId = null
       }
+    }
 
-      if (state.levelId === 13) {
-        if (els.measurementSection) els.measurementSection.hidden = false
-        if (els.tallyDisplay) {
-          if (state.tally) {
-            let tallyHtml = "<strong>Observations:</strong><br/>"
-            if (state.tally.ud && (state.tally.ud[0] > 0 || state.tally.ud[1] > 0)) {
-              tallyHtml += `Up-Down Lens => Agree: ${state.tally.ud[0]}, Differ: ${state.tally.ud[1]}<br/>`
-            }
-            if (state.tally.side && (state.tally.side[0] > 0 || state.tally.side[1] > 0)) {
-              tallyHtml += `Sideways Lens => Agree: ${state.tally.side[0]}, Differ: ${state.tally.side[1]}<br/>`
-            }
-            els.tallyDisplay.innerHTML = tallyHtml
-          } else {
-            els.tallyDisplay.innerHTML = ""
+    function renderMeasurementSection(state) {
+      if (els.measurementSection) els.measurementSection.hidden = false
+      if (els.tallyDisplay) {
+        if (state.tally) {
+          let tallyHtml = "<strong>Observations:</strong><br/>"
+          if (state.tally.ud && (state.tally.ud[0] > 0 || state.tally.ud[1] > 0)) {
+            tallyHtml += `Up-Down Lens => Agree: ${state.tally.ud[0]}, Differ: ${state.tally.ud[1]}<br/>`
           }
+          if (state.tally.side && (state.tally.side[0] > 0 || state.tally.side[1] > 0)) {
+            tallyHtml += `Sideways Lens => Agree: ${state.tally.side[0]}, Differ: ${state.tally.side[1]}<br/>`
+          }
+          els.tallyDisplay.innerHTML = tallyHtml
+        } else {
+          els.tallyDisplay.innerHTML = ""
         }
-      } else {
-        if (els.measurementSection) els.measurementSection.hidden = true
+      }
+    }
+
+    // --- LEVEL SPECIFIC ROUTERS ---
+
+    function renderLevel12(state) {
+      renderPairCards(state)
+      renderWinBanner(state)
+      if (state.status === "won") {
+        if (els.winTitle) els.winTitle.textContent = "Success!"
+        if (els.winDesc) els.winDesc.textContent = "You successfully completed the level."
+      }
+    }
+
+    function renderLevel13(state) {
+      renderPairCards(state)
+      renderMeasurementSection(state)
+      renderTable(state)
+      renderWinBanner(state)
+      if (state.status === "won") {
+        if (els.winTitle) els.winTitle.textContent = "Success!"
+        if (els.winDesc) els.winDesc.textContent = "You successfully completed the level."
+      }
+    }
+
+    function renderLevel14(state) {
+      renderTargetCard(state)
+      renderBlueprint(state, "facts")
+      renderPairCards(state)
+      renderWinBanner(state)
+    }
+
+    function renderLevel15(state) {
+      renderBlueprint(state, "codebook")
+      renderPairCards(state)
+      renderTable(state)
+      renderWinBanner(state)
+      if (state.status === "won") {
+        if (els.winTitle) els.winTitle.textContent = "Success!"
+        if (els.winDesc) els.winDesc.textContent = "You successfully completed the level."
+      }
+    }
+
+    function renderLevel20(state) {
+      if (els.plannerSection) els.plannerSection.hidden = false
+      const extra = state.extra || {}
+      if (extra.messages) {
+        currentMessages = extra.messages
+        if (extra.budget) currentBudget = extra.budget
+
+        if (state.status === "won" && state.score) {
+          if (els.plannerScoreCard) els.plannerScoreCard.hidden = false
+          if (els.scoreDetails) els.scoreDetails.innerHTML = `
+            Bits Per Parcel: ${state.score.bitsPerParcel}<br/>
+            Parcels Used: ${state.score.parcelsUsed}<br/>
+            Twins Left: ${state.score.twinsLeft}
+          `
+          if (els.winBanner) els.winBanner.hidden = false
+          if (els.winTitle) els.winTitle.textContent = "Network Plan Submitted!"
+          if (els.winDesc) els.winDesc.textContent = "You successfully passed the budget."
+          if (els.winStars) els.winStars.textContent = "★★★"
+        } else {
+          if (els.plannerScoreCard) els.plannerScoreCard.hidden = true
+        }
+        renderPlanner()
       }
     }
 
