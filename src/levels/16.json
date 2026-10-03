@@ -9,8 +9,7 @@
   ],
   "tools": [
     "lens",
-    "linker",
-    "unmake"
+    "linker"
   ],
   "lenses": [
     "ud"
