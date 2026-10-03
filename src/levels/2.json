@@ -1,0 +1,47 @@
+{
+  "id": 2,
+  "act": 1,
+  "tier": 2,
+  "title": "Two bits, two parcels",
+  "mode": "post",
+  "newWords": [],
+  "tools": [],
+  "lenses": [
+    "ud"
+  ],
+  "lockedQubits": [],
+  "start": {
+    "kind": "zero",
+    "t": 0
+  },
+  "phases": [
+    "alice"
+  ],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "classical",
+    "bits": "10",
+    "parcelBudget": 2
+  },
+  "par": 2,
+  "goalLine": "Send the two-bit message using two parcels.",
+  "hints": [
+    {
+      "afterFailures": 2,
+      "text": "Each plain parcel can carry only one answer."
+    },
+    {
+      "afterFailures": 4,
+      "text": "Stamp one bit per parcel to deliver both."
+    }
+  ],
+  "events": {
+    "slot-refused": "One parcel cannot carry two answers at once."
+  },
+  "extra": {},
+  "physicsCheck": "check-02",
+  "removePhysicsNote": "Without a shared pair, one parcel carries one answer, so two bits cost two parcels."
+}
