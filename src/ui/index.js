@@ -32,17 +32,11 @@ export function mountUI(root, initialEngine) {
     // Build the static shell once
     container.innerHTML = `
       <div class="parcel-game-app" id="level14-app">
-        <!-- DEV PREVIEW SELECTOR -->
-        <div style="background:#ffea00; color:#000; padding:4px 8px; font-weight:bold; font-size:12px; text-align:center;">
-          DEV: Preview Level
-          <select id="dev-level-select" style="margin-left: 8px;">
-            <option value="12">Level 12 (Make twins)</option>
-            <option value="13">Level 13 (Twins' facts)</option>
-            <option value="14" selected>Level 14 (One-hand writing)</option>
-            <option value="15">Level 15 (Superdense)</option>
-            <option value="16">Level 16 (Unmake)</option>
-            <option value="20">Level 20 (Network Plan)</option>
-          </select>
+        <!-- LEVEL SELECT SCREEN -->
+        <div id="level-select-screen" hidden style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--color-bg-body); z-index: 100; padding: 1.5rem; overflow-y: auto;">
+          <h2 style="margin-top: 0;">Select Level</h2>
+          <div id="level-list" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;"></div>
+          <button type="button" id="btn-close-levels" style="margin-top: 1.5rem; padding: 1rem; min-height: 44px; width: 100%; max-width: 300px; display: block;">Close</button>
         </div>
 
         <!-- HEADER / GOAL SECTION -->
@@ -55,6 +49,7 @@ export function mountUI(root, initialEngine) {
             </div>
             <div class="header-actions">
               <span class="move-tracker" id="header-moves">Moves: 0 / Par: 2</span>
+              <button type="button" class="btn-levels" id="btn-levels" hidden style="padding: 0.5rem 1rem; margin-right: 0.5rem;">Levels</button>
               <button type="button" class="btn-reset" id="btn-reset" title="Reset this level">
                 <span class="btn-icon" aria-hidden="true">↺</span>
                 <span>Reset</span>
@@ -311,8 +306,8 @@ export function mountUI(root, initialEngine) {
           <div class="measurement-card">
             <div class="lens-chooser">
               <span class="lens-label">Select Lens:</span>
-              <label class="lens-radio-label"><input type="radio" name="lens-select" value="ud" checked> Up-Down (Colour)</label>
-              <label class="lens-radio-label"><input type="radio" name="lens-select" value="side"> Sideways (Shape)</label>
+              <label class="lens-radio-label"><input type="radio" name="lens-select" value="ud" checked> Up-down</label>
+              <label class="lens-radio-label"><input type="radio" name="lens-select" value="side"> Sideways</label>
             </div>
             <button type="button" class="btn-read-twins" id="btn-read-twins">Read Both Twins</button>
 
@@ -449,6 +444,10 @@ export function mountUI(root, initialEngine) {
       actBadge: container.querySelector("#header-act-badge"),
       phaseBadge: container.querySelector("#header-phase-badge"),
       moves: container.querySelector("#header-moves"),
+      btnLevels: container.querySelector("#btn-levels"),
+      levelSelectScreen: container.querySelector("#level-select-screen"),
+      levelList: container.querySelector("#level-list"),
+      btnCloseLevels: container.querySelector("#btn-close-levels"),
       checkSection: container.querySelector("#check-section"),
       checkBtn: container.querySelector("#check-btn"),
       btnNextLevel: container.querySelector("#btn-next-level"),
@@ -662,29 +661,48 @@ export function mountUI(root, initialEngine) {
       })
     }
 
-    // Dev selector remount logic
-    const devSelect = container.querySelector("#dev-level-select")
-    if (devSelect) {
-      // Set the select element to match current engine level if available
-      if (currentEngine && typeof currentEngine.getRenderState === "function") {
-        const initialState = currentEngine.getRenderState()
-        if (initialState && initialState.levelId) {
-          devSelect.value = initialState.levelId.toString()
+    if (els.btnLevels && els.levelSelectScreen && els.btnCloseLevels && els.levelList) {
+      els.btnLevels.addEventListener("click", () => {
+        if (currentEngine && typeof currentEngine.getRenderState === "function") {
+          const state = currentEngine.getRenderState()
+          if (!state.levels) return
+
+          const prog = state.progress || {}
+          const starsById = prog.starsById || {}
+          const completedIds = prog.completedIds || []
+
+          let html = ""
+          state.levels.forEach(lvl => {
+            const isCurrent = lvl.id === state.levelId
+            const isDone = completedIds.includes(lvl.id)
+            const stars = starsById[lvl.id] || 0
+
+            html += `<button type="button" class="level-select-btn" data-id="${lvl.id}" style="text-align: left; padding: 1rem; min-height: 44px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--color-border-subtle); background: ${isCurrent ? 'var(--color-bg-elevated)' : 'var(--color-bg-surface)'}; border-radius: var(--radius-md);">
+              <span style="font-weight: ${isCurrent ? 'bold' : 'normal'};">Level ${lvl.id}: ${lvl.title}</span>
+              <span style="font-size: 0.9em; color: var(--color-text-dim);">
+                ${isCurrent ? '<strong style="color: var(--color-brand);">Now</strong> ' : ''}
+                ${stars > 0 ? stars + ' stars ' : ''}
+                ${isDone ? 'Done' : ''}
+              </span>
+            </button>`
+          })
+
+          els.levelList.innerHTML = html
+          els.levelList.querySelectorAll(".level-select-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+              const id = parseInt(btn.dataset.id, 10)
+              if (currentEngine && typeof currentEngine.selectLevel === "function") {
+                currentEngine.selectLevel(id)
+              }
+              els.levelSelectScreen.hidden = true
+            })
+          })
+          els.levelSelectScreen.hidden = false
         }
-      }
+      })
 
-      devSelect.addEventListener("change", (e) => {
-        const newLevel = parseInt(e.target.value, 10)
-
-        // Clean up old subscriptions
-        if (unsubscribe) {
-          unsubscribe()
-          unsubscribe = null
-        }
-
-        currentEngine = createFakeEngine({ levelId: newLevel })
-        // Re-init UI completely
-        init()
+      els.btnCloseLevels.addEventListener("click", () => {
+        els.levelSelectScreen.hidden = true
       })
     }
 
@@ -734,6 +752,10 @@ export function mountUI(root, initialEngine) {
 
     els.btnReset.addEventListener("click", () => {
       currentPlan = []
+      if (els.tableBody) {
+        els.tableBody.querySelectorAll("select").forEach(sel => sel.value = "")
+        if (els.btnSubmitTable) els.btnSubmitTable.disabled = true
+      }
       if (currentEngine && typeof currentEngine.reset === "function") {
         currentEngine.reset()
       }
@@ -759,6 +781,15 @@ export function mountUI(root, initialEngine) {
             render(currentEngine.getRenderState())
           }
         })
+      })
+    }
+    if (els.tableBody) {
+      els.tableBody.addEventListener("change", (e) => {
+        if (e.target.tagName.toLowerCase() === "select") {
+          const selects = Array.from(els.tableBody.querySelectorAll("select"))
+          const allChosen = selects.every(s => s.value !== "")
+          if (els.btnSubmitTable) els.btnSubmitTable.disabled = !allChosen
+        }
       })
     }
 
@@ -810,6 +841,14 @@ export function mountUI(root, initialEngine) {
           els.phaseBadge.textContent = `PHASE: ${(state.phase || "alice").toUpperCase()}`
         }
       }
+
+      if (els.btnLevels) {
+        if (state.levels && state.levels.length > 0) {
+          els.btnLevels.hidden = false
+        } else {
+          els.btnLevels.hidden = true
+        }
+      }
       if (els.moves) {
         if (state.levelId === 20) els.moves.hidden = true;
         else {
@@ -830,14 +869,32 @@ export function mountUI(root, initialEngine) {
 
       const feedback = state.feedback || { kind: "info", text: "" }
       const kind = feedback.kind || "info"
-      if (els.feedbackCard) els.feedbackCard.className = `feedback-card feedback-${kind}`
+      const isBobLocked = state.lockedQubits && state.lockedQubits.includes("B")
+
       if (els.feedbackKindText) els.feedbackKindText.textContent = kind.toUpperCase()
       if (els.feedbackIcon) {
         if (kind === "blocked") els.feedbackIcon.textContent = "⛔"
         else if (kind === "hint") els.feedbackIcon.textContent = "💡"
         else els.feedbackIcon.textContent = "ℹ️"
       }
-      if (els.feedbackText) els.feedbackText.textContent = feedback.text || "Alice can act on her twin. Bob's twin is locked."
+      if (els.feedbackText) {
+        if (feedback.text) {
+          els.feedbackText.textContent = feedback.text
+        } else if (isBobLocked) {
+          els.feedbackText.textContent = "Alice can act on her twin. Bob's twin is locked."
+        } else {
+          els.feedbackText.textContent = ""
+        }
+      }
+
+      if (els.feedbackCard) {
+        if (!feedback.text && !isBobLocked) {
+          els.feedbackCard.hidden = true
+        } else {
+          els.feedbackCard.hidden = false
+          els.feedbackCard.className = `feedback-card feedback-${kind}`
+        }
+      }
 
       // --- RESET VISIBILITY TO NEUTRAL ---
       if (els.targetCard) els.targetCard.hidden = true
@@ -848,6 +905,8 @@ export function mountUI(root, initialEngine) {
       if (els.tableSection) els.tableSection.hidden = true
       if (els.plannerSection) els.plannerSection.hidden = true
       if (els.level16Section) els.level16Section.hidden = true
+      if (els.aliceBody) els.aliceBody.style.display = ""
+      if (els.bobBody) els.bobBody.style.display = ""
 
       if (els.checkSection) {
         if ((state.levelId === 12 || state.levelId === 14) && state.status !== "won") {
@@ -1005,6 +1064,11 @@ export function mountUI(root, initialEngine) {
       if (els.bobBody) {
         if (isLocked) els.bobBody.classList.add("muted-body")
         else els.bobBody.classList.remove("muted-body")
+        if (state.levelId === 13) els.bobBody.style.display = "none"
+      }
+
+      if (els.aliceBody) {
+        if (state.levelId === 13) els.aliceBody.style.display = "none"
       }
 
       // Thread
@@ -1052,7 +1116,7 @@ export function mountUI(root, initialEngine) {
 
           if (isLevel13) {
             if (extra.rows && extra.columns && extra.options) {
-              const optionsHtml = `<option value="">-- select --</option>` + extra.options.map(opt => `<option value="${opt}">${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`).join("")
+              const optionsHtml = `<option value="">Choose...</option>` + extra.options.map(opt => `<option value="${opt}">${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`).join("")
 
               extra.rows.forEach(row => {
                 html += `<div class="table-row table-row-l13">
@@ -1068,7 +1132,7 @@ export function mountUI(root, initialEngine) {
               })
             } else if (extra.factTable) {
               extra.factTable.forEach(row => {
-                let optionsHtml = `<option value="">-- select --</option><option value="agree">Agree</option><option value="differ">Differ</option><option value="random">Random</option>`
+                let optionsHtml = `<option value="">Choose...</option><option value="agree">Agree</option><option value="differ">Differ</option><option value="random">Random</option>`
                 html += `
                   <div class="table-row">
                     <label class="row-label" for="select-${row.id}">${row.label}</label>
@@ -1089,7 +1153,7 @@ export function mountUI(root, initialEngine) {
                 label = row.label
               }
 
-              const optionsHtml = `<option value="">-- select --</option><option value="agree">Agree</option><option value="differ">Differ</option>`
+              const optionsHtml = `<option value="">Choose...</option><option value="agree">Agree</option><option value="differ">Differ</option>`
               html += `<div class="table-row table-row-l15">
                 <label class="row-label">${label}</label>
                 <div class="row-selects">
@@ -1106,6 +1170,7 @@ export function mountUI(root, initialEngine) {
             })
           }
           els.tableBody.innerHTML = html
+          if (els.btnSubmitTable) els.btnSubmitTable.disabled = true
         }
       }
     }
