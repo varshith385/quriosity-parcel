@@ -332,7 +332,7 @@ export function createEngine(options = {}) {
       dialT: dial ? dial.tDegrees : null,
       lens: lastLens,
       tally: { ud: [...tally.ud], side: [...tally.side] },
-      sent,
+      sent: null,
     }
 
     const injected =
@@ -383,7 +383,6 @@ export function createEngine(options = {}) {
         kind: 'info',
         text:
           currentLevel.events?.['wrong-result'] ||
-          result.detail ||
           'Not quite right. Try again!',
       }
       checkHints()
