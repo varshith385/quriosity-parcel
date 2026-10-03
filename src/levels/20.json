@@ -27,7 +27,7 @@
   "hints": [
     {
       "afterFailures": 3,
-      "text": "A plain parcel carries 1 bit. A parcel with a twin carries 2."
+      "text": "A plain parcel gives one bit. A parcel sent with its twin lets Bob read two."
     },
     {
       "afterFailures": 5,

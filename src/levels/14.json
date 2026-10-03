@@ -4,15 +4,27 @@
   "tier": 1,
   "title": "One-hand writing",
   "mode": "pair",
-  "newWords": ["flip", "twist"],
-  "tools": ["flip", "twist"],
-  "lenses": ["ud"],
-  "lockedQubits": ["B"],
+  "newWords": [
+    "flip",
+    "twist"
+  ],
+  "tools": [
+    "flip",
+    "twist"
+  ],
+  "lenses": [
+    "ud"
+  ],
+  "lockedQubits": [
+    "B"
+  ],
   "start": {
     "kind": "pair",
     "t": 0
   },
-  "phases": ["alice"],
+  "phases": [
+    "alice"
+  ],
   "transit": {
     "spy": false,
     "road": null
@@ -30,7 +42,7 @@
     },
     {
       "afterFailures": 5,
-      "text": "The lights are a blueprint of how the cards relate. You can't read them by looking."
+      "text": "The lights show how the two twins relate."
     }
   ],
   "events": {
