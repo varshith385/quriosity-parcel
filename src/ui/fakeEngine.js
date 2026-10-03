@@ -226,10 +226,31 @@ export function createFakeEngine(initialOverrides = {}) {
   function look(qubit, lens) {
     if (state.levelId === 13) {
       if (!state.tally) state.tally = { ud: [0, 0], side: [0, 0] }
+      if (!state.extra.pairReadings) state.extra.pairReadings = { ud: [], side: [] }
+      if (!state.extra._pendingLook) state.extra._pendingLook = {}
+
+      if (state.extra._pendingLook[qubit]) {
+        state.feedback = { kind: "info", text: `Already looked at ${qubit === "A" ? "Alice's" : "Bob's"} twin.` }
+        notify()
+        return
+      }
+
+      state.extra._pendingLook[qubit] = true
+
       // Mock logic: Twins always agree, so we always increment bin 0 for 'ud' and bin 1 for 'side'
       const bin = lens === "ud" ? 0 : 1
       state.tally[lens][bin]++
       
+      if (state.extra._pendingLook.A && state.extra._pendingLook.B) {
+        state.extra._pendingLook = {} // Fresh pair for next round
+        const a = Math.random() < 0.5 ? 0 : 1
+        const b = a
+        state.extra.pairReadings[lens].push({ a, b })
+        if (state.extra.pairReadings[lens].length > 10) {
+          state.extra.pairReadings[lens].shift()
+        }
+      }
+
       state.feedback = { kind: "info", text: `Looked at ${qubit === "A" ? "Alice's" : "Bob's"} twin ${lens === "ud" ? "up-down" : "sideways"}.` }
       notify()
     } else if (state.levelId === 16) {

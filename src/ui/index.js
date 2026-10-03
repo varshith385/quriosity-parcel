@@ -317,6 +317,11 @@ export function mountUI(root, initialEngine) {
             <button type="button" class="btn-read-twins" id="btn-read-twins">Read Both Twins</button>
 
             <div class="tally-display" id="tally-display" aria-live="polite"></div>
+
+            <div class="rounds-display" id="rounds-display" hidden style="margin-top: 1.5rem; border-top: 1px solid var(--color-border-subtle); padding-top: 1rem;">
+              <h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-text-muted);">Recent Rounds</h4>
+              <ul id="rounds-list" style="list-style: none; padding: 0; margin: 0; font-family: var(--font-mono); font-size: 0.95rem;"></ul>
+            </div>
           </div>
         </section>
 
@@ -363,6 +368,8 @@ export function mountUI(root, initialEngine) {
             <h3>Final Score</h3>
             <div id="score-details"></div>
           </div>
+        </section>
+
         <!-- LEVEL 16 UNMAKE SECTION -->
         <section class="level16-section" id="level16-section" hidden>
           <div class="level16-header" style="margin-bottom: 1.5rem; text-align: center;">
@@ -508,6 +515,8 @@ export function mountUI(root, initialEngine) {
       measurementSection: container.querySelector("#measurement-section"),
       btnReadTwins: container.querySelector("#btn-read-twins"),
       tallyDisplay: container.querySelector("#tally-display"),
+      roundsDisplay: container.querySelector("#rounds-display"),
+      roundsList: container.querySelector("#rounds-list"),
       lensRadios: container.querySelectorAll("input[name='lens-select']"),
 
       tableSection: container.querySelector("#table-section"),
@@ -742,6 +751,14 @@ export function mountUI(root, initialEngine) {
           currentEngine.look("A", selectedLens)
           currentEngine.look("B", selectedLens)
         }
+      })
+
+      els.lensRadios.forEach(radio => {
+        radio.addEventListener("change", () => {
+          if (currentEngine && typeof currentEngine.getRenderState === "function") {
+            render(currentEngine.getRenderState())
+          }
+        })
       })
     }
 
@@ -1107,6 +1124,28 @@ export function mountUI(root, initialEngine) {
           els.tallyDisplay.innerHTML = tallyHtml
         } else {
           els.tallyDisplay.innerHTML = ""
+        }
+      }
+
+      if (els.roundsDisplay && els.roundsList) {
+        let selectedLens = "ud"
+        if (els.lensRadios) {
+          els.lensRadios.forEach(radio => {
+            if (radio.checked) selectedLens = radio.value
+          })
+        }
+
+        const extra = state.extra || {}
+        const readings = (extra.pairReadings && extra.pairReadings[selectedLens]) || []
+
+        if (readings.length > 0) {
+          els.roundsDisplay.hidden = false
+          els.roundsList.innerHTML = readings.map((r, i) => {
+             return `<li style="margin-bottom: 0.35rem; padding-bottom: 0.35rem; border-bottom: 1px solid var(--color-border-subtle);">Round ${i + 1}: Alice's twin ${r.a} · Bob's twin ${r.b}</li>`
+          }).join("")
+        } else {
+          els.roundsDisplay.hidden = true
+          els.roundsList.innerHTML = ""
         }
       }
     }

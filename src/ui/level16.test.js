@@ -55,11 +55,26 @@ describe('FakeEngine for Level 16', () => {
       expect(state.toolsAvailable).not.toContain('unmake')
     } else {
       document.body.innerHTML = '<div id="root"></div>'
-      mountUI(document.getElementById('root'), engine)
+      // 1. Mount with level 14 (default) like the real app might start
+      const engine14 = createFakeEngine({ levelId: 14 })
+      mountUI(document.getElementById('root'), engine14)
 
+      // 2. Switch to Level 16 the same way DEV dropdown does:
+      // index.js line 676-678 does:
+      // currentEngine = createFakeEngine({ levelId: newLevel })
+      // init() (which rebuilds DOM)
+      // To simulate this from the outside, we trigger the DEV select change
+      const devSelect = document.getElementById('dev-level-select')
+      devSelect.value = '16'
+      devSelect.dispatchEvent(new Event('change'))
+
+      // 3. Assert on the new state
       const section = document.getElementById('level16-section')
+
+      // The instructions say: "asserts #level16-section is not hidden, getComputedStyle display is not none..."
       expect(section).not.toBeNull()
       expect(section.hidden).toBe(false)
+      expect(window.getComputedStyle(section).display).not.toBe('none')
 
       const lookA = document.getElementById('btn-l16-look-a')
       const lookB = document.getElementById('btn-l16-look-b')
