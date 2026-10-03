@@ -1,0 +1,60 @@
+{
+  "id": 11,
+  "act": 3,
+  "tier": 2,
+  "title": "Rewind",
+  "mode": "dial",
+  "newWords": [],
+  "tools": [
+    "twist",
+    "lens"
+  ],
+  "lenses": [
+    "ud",
+    "side"
+  ],
+  "lockedQubits": [],
+  "start": {
+    "kind": "dial",
+    "t": 270
+  },
+  "phases": [
+    "alice"
+  ],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "state",
+    "state": [
+      1,
+      0,
+      0,
+      0
+    ]
+  },
+  "par": 2,
+  "goalLine": "Restore the parcel to its starting arrow.",
+  "hints": [
+    {
+      "afterFailures": 2,
+      "text": "Every tool is its own undo button, but order matters."
+    },
+    {
+      "afterFailures": 4,
+      "text": "To undo a chain of moves, apply the same moves in reverse order."
+    }
+  ],
+  "events": {
+    "wrong-order": "Repeating the original chain in forward order gives the downward arrow instead."
+  },
+  "extra": {
+    "chain": [
+      "H",
+      "Z"
+    ]
+  },
+  "physicsCheck": "check-11",
+  "removePhysicsNote": "Without reversibility, quantum operations could not be undone by running them in reverse."
+}
