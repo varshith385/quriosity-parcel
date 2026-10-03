@@ -11,6 +11,7 @@
  */
 
 import { createFakeEngine } from "./fakeEngine.js"
+import { mountDial } from "./dial/index.js"
 
 export function mountUI(root, initialEngine) {
   const container = typeof root === "string" ? document.querySelector(root) : root
@@ -22,6 +23,7 @@ export function mountUI(root, initialEngine) {
   let currentEngine = initialEngine
   let unsubscribe = null
   let currentTableLevelId = null
+  let dialUnmount = null
 
   function init() {
     let currentPlan = []
@@ -32,6 +34,9 @@ export function mountUI(root, initialEngine) {
     // Build the static shell once
     container.innerHTML = `
       <div class="parcel-game-app" id="level14-app">
+        <!-- DIAL SCREEN CONTAINER -->
+        <div id="dial-container" hidden></div>
+
         <!-- LEVEL SELECT SCREEN -->
         <div id="level-select-screen" hidden style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--color-bg-body); z-index: 100; padding: 1.5rem; overflow-y: auto;">
           <h2 style="margin-top: 0;">Select Level</h2>
@@ -451,6 +456,7 @@ export function mountUI(root, initialEngine) {
       checkSection: container.querySelector("#check-section"),
       checkBtn: container.querySelector("#check-btn"),
       btnNextLevel: container.querySelector("#btn-next-level"),
+      dialContainer: container.querySelector("#dial-container"),
 
       level16Section: container.querySelector("#level16-section"),
       l16Counter: container.querySelector("#l16-delivery-counter"),
@@ -917,6 +923,33 @@ export function mountUI(root, initialEngine) {
       }
 
       // --- ROUTER ---
+      const isDial = state.mode === "dial" || state.levelId === 2
+
+      if (els.title) els.title.hidden = isDial
+      if (els.goal) els.goal.hidden = isDial
+      if (els.actBadge) els.actBadge.hidden = isDial
+      if (els.levelBadge) els.levelBadge.hidden = isDial
+      if (els.phaseBadge) els.phaseBadge.hidden = isDial
+      if (els.moves) els.moves.hidden = isDial
+      if (els.btnReset) els.btnReset.hidden = isDial
+      if (isDial && els.feedbackCard) els.feedbackCard.hidden = true
+
+      if (els.dialContainer) {
+        if (isDial) {
+          els.dialContainer.hidden = false
+          if (!dialUnmount) {
+            dialUnmount = mountDial(els.dialContainer, currentEngine)
+          }
+          return
+        } else {
+          els.dialContainer.hidden = true
+          if (dialUnmount) {
+            dialUnmount()
+            dialUnmount = null
+          }
+        }
+      }
+
       if (state.levelId === 12) {
         renderLevel12(state)
       } else if (state.levelId === 13) {
