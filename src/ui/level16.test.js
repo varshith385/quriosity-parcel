@@ -59,14 +59,8 @@ describe('FakeEngine for Level 16', () => {
       const engine14 = createFakeEngine({ levelId: 14 })
       mountUI(document.getElementById('root'), engine14)
 
-      // 2. Switch to Level 16 the same way DEV dropdown does:
-      // index.js line 676-678 does:
-      // currentEngine = createFakeEngine({ levelId: newLevel })
-      // init() (which rebuilds DOM)
-      // To simulate this from the outside, we trigger the DEV select change
-      const devSelect = document.getElementById('dev-level-select')
-      devSelect.value = '16'
-      devSelect.dispatchEvent(new Event('change'))
+      // 2. Switch to Level 16 using selectLevel
+      engine14.selectLevel(16)
 
       // 3. Assert on the new state
       const section = document.getElementById('level16-section')
@@ -89,5 +83,52 @@ describe('FakeEngine for Level 16', () => {
       expect(tools).toContain('linker')
       expect(tools).not.toContain('unmake')
     }
+  })
+
+  it('renders level select screen and allows switching levels', () => {
+    if (typeof document === 'undefined') return
+
+    document.body.innerHTML = '<div id="root"></div>'
+    // Create engine with a mock selectLevel to see if it gets called
+    const engine = createFakeEngine({ levelId: 14 })
+    let selectedLevel = null
+    engine.selectLevel = (id) => { selectedLevel = id }
+
+    // Inject a specific levels array
+    const originalGetRenderState = engine.getRenderState
+    engine.getRenderState = () => {
+      const state = originalGetRenderState.call(engine)
+      state.levels = [
+        { id: 12, title: "Make twins", tier: 1 },
+        { id: 13, title: "Twins' facts", tier: 1 }
+      ]
+      return state
+    }
+
+    mountUI(document.getElementById('root'), engine)
+
+    // Initially the level select screen is hidden
+    const screen = document.getElementById('level-select-screen')
+    expect(screen.hidden).toBe(true)
+
+    // Click the Levels button
+    const btnLevels = document.getElementById('btn-levels')
+    expect(btnLevels.hidden).toBe(false)
+    btnLevels.dispatchEvent(new Event('click'))
+
+    // Screen should now be visible and populated
+    expect(screen.hidden).toBe(false)
+    const list = document.getElementById('level-list')
+    const buttons = list.querySelectorAll('.level-select-btn')
+    expect(buttons.length).toBe(2)
+    expect(buttons[0].textContent).toContain('Level 12')
+    expect(buttons[1].textContent).toContain('Level 13')
+
+    // Click on Level 13
+    buttons[1].dispatchEvent(new Event('click'))
+
+    // Should call engine.selectLevel and hide screen
+    expect(selectedLevel).toBe(13)
+    expect(screen.hidden).toBe(true)
   })
 })
