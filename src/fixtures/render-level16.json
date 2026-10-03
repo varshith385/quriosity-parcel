@@ -1,0 +1,38 @@
+{
+  "levelId": 16,
+  "title": "Unmake",
+  "goalLine": "Turn each delivery into its two bits.",
+  "mode": "post",
+  "tier": 1,
+  "newWords": ["unmake"],
+  "target": { "type": "stream" },
+  "phase": "bob",
+  "state": [0.5, 0.5, 0.5, -0.5],
+  "dial": null,
+  "toolsAvailable": ["lens", "linker", "unmake"],
+  "lenses": ["ud"],
+  "lockedQubits": [],
+  "thread": true,
+  "lights": null,
+  "meters": null,
+  "tally": { "ud": [0, 0], "side": [0, 0] },
+  "moveLog": [],
+  "moveCount": 0,
+  "failureCount": 0,
+  "par": 4,
+  "stars": 0,
+  "extra": {
+    "delivery": { "index": 0, "total": 4 },
+    "decoded": [],
+    "readings": { "A": null, "B": null },
+    "lastAttempt": null
+  },
+  "status": "playing",
+  "feedback": { "kind": null, "text": "" },
+  "score": null,
+  "progress": { "completedIds": [], "starsById": {} },
+  "levels": [
+    { "id": 14, "title": "One-hand writing", "tier": 1 },
+    { "id": 16, "title": "Unmake", "tier": 1 }
+  ]
+}
