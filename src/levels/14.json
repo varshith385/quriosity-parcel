@@ -1,0 +1,43 @@
+{
+  "id": 14,
+  "act": 4,
+  "tier": 1,
+  "title": "One-hand writing",
+  "mode": "pair",
+  "newWords": ["flip", "twist"],
+  "tools": ["flip", "twist"],
+  "lenses": ["ud"],
+  "lockedQubits": ["B"],
+  "start": {
+    "kind": "pair",
+    "t": 0
+  },
+  "phases": ["alice"],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "message",
+    "bits": "10"
+  },
+  "par": 2,
+  "goalLine": "Make the lights match the message.",
+  "hints": [
+    {
+      "afterFailures": 3,
+      "text": "Each button changes exactly one light."
+    },
+    {
+      "afterFailures": 5,
+      "text": "The lights are a blueprint of how the cards relate. You can't read them by looking."
+    }
+  ],
+  "events": {
+    "tool-blocked": "Bob's twin is locked.",
+    "no-visible-change": "Pressing the same button twice cancels itself out."
+  },
+  "extra": {},
+  "physicsCheck": "check-02",
+  "removePhysicsNote": "Without the pair, one card has one answer, so the second light has nothing to attach to."
+}
