@@ -40,6 +40,7 @@ export function mountUI(root, initialEngine) {
             <option value="13">Level 13 (Twins' facts)</option>
             <option value="14" selected>Level 14 (One-hand writing)</option>
             <option value="15">Level 15 (Superdense)</option>
+            <option value="16">Level 16 (Unmake)</option>
             <option value="20">Level 20 (Network Plan)</option>
           </select>
         </div>
@@ -373,6 +374,98 @@ export function mountUI(root, initialEngine) {
             <h3>Final Score</h3>
             <div id="score-details"></div>
           </div>
+        <!-- LEVEL 16 UNMAKE SECTION -->
+        <section class="level16-section" id="level16-section" hidden>
+          <div class="level16-header" style="margin-bottom: 1.5rem; text-align: center;">
+            <h2 id="l16-delivery-counter" style="font-size: 1.75rem; margin-bottom: 0.5rem;">Delivery 1 of 4</h2>
+            <div id="l16-delivery-chips" style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; flex-wrap: wrap;">
+            </div>
+            <p style="font-size: 1.1rem; font-weight: 500;">Alice's parcel has arrived. Bob now holds both twins.</p>
+          </div>
+
+          <div class="twins-section" style="margin-bottom: 1.5rem;">
+            <!-- ALICE TWIN -->
+            <article class="twin-card twin-alice" style="border: 2px solid var(--color-border-strong);">
+              <div class="twin-card-header">
+                <div class="twin-header-text">
+                  <span class="twin-role-tag">QUBIT A</span>
+                  <h2 class="twin-title">Alice's Twin</h2>
+                </div>
+                <span class="twin-status-pill status-active">
+                  <span class="active-dot" aria-hidden="true">●</span>
+                  <span>BOB HOLDS THIS</span>
+                </span>
+              </div>
+              <div class="card-body">
+                <div class="parcel-visual-wrapper">
+                  <div class="parcel-card-graphic" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 120px; background: var(--color-bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 0.9rem; font-weight: bold; color: var(--color-text-dim); margin-bottom: 0.5rem;">READING</div>
+                    <div id="l16-reading-a" style="font-size: 3rem; font-weight: 800; line-height: 1;">?</div>
+                  </div>
+                </div>
+                <div class="twin-controls-area">
+                  <button type="button" class="btn-submit" id="btn-l16-look-a" style="width: 100%; margin-top: 1rem; padding: 0.75rem;">Look at Alice's twin</button>
+                </div>
+              </div>
+            </article>
+
+            <!-- THREAD -->
+            <div class="thread-connector" style="width: 2rem;"></div>
+
+            <!-- BOB TWIN -->
+            <article class="twin-card twin-bob" style="border: 2px solid var(--color-border-strong);">
+              <div class="twin-card-header">
+                <div class="twin-header-text">
+                  <span class="twin-role-tag">QUBIT B</span>
+                  <h2 class="twin-title">Bob's Twin</h2>
+                </div>
+                <span class="twin-status-pill status-active">
+                  <span class="active-dot" aria-hidden="true">●</span>
+                  <span>BOB HOLDS THIS</span>
+                </span>
+              </div>
+              <div class="card-body">
+                <div class="parcel-visual-wrapper">
+                  <div class="parcel-card-graphic" style="display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 120px; background: var(--color-bg-elevated); border-radius: var(--radius-md);">
+                    <div style="font-size: 0.9rem; font-weight: bold; color: var(--color-text-dim); margin-bottom: 0.5rem;">READING</div>
+                    <div id="l16-reading-b" style="font-size: 3rem; font-weight: 800; line-height: 1;">?</div>
+                  </div>
+                </div>
+                <div class="twin-controls-area">
+                  <button type="button" class="btn-submit" id="btn-l16-look-b" style="width: 100%; margin-top: 1rem; padding: 0.75rem;">Look at Bob's twin</button>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div class="l16-tools" style="background: var(--color-bg-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border-subtle); margin-bottom: 1.5rem;">
+            <span class="controls-label" style="display: block; margin-bottom: 1rem; font-weight: bold;">Bob's Tools:</span>
+            <div class="buttons-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+              <button type="button" class="tool-btn btn-linker" id="btn-l16-linker" aria-label="Apply Linker move">
+                <div class="btn-top">
+                  <span class="tool-icon linker-icon" aria-hidden="true">🔗</span>
+                  <span class="tool-name">LINKER</span>
+                </div>
+                <span class="tool-desc">Acts on both twins</span>
+              </button>
+              <button type="button" class="tool-btn btn-lens" id="btn-l16-lens" aria-label="Apply Lens-changer move">
+                <div class="btn-top">
+                  <span class="tool-icon lens-icon" aria-hidden="true"></span>
+                  <span class="tool-name">LENS-CHANGER</span>
+                </div>
+                <span class="tool-desc">Acts on one twin</span>
+              </button>
+              <button type="button" class="tool-btn btn-unmake" id="btn-l16-unmake" aria-label="Apply Unmake move">
+                <div class="btn-top">
+                  <span class="tool-icon" aria-hidden="true">⏪</span>
+                  <span class="tool-name">UNMAKE</span>
+                </div>
+                <span class="tool-desc">Runs the pair-maker backwards</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="l16-last-attempt" style="text-align: center; color: var(--color-text-dim); font-weight: 500;"></div>
         </section>
       </div>
     `
@@ -386,6 +479,19 @@ export function mountUI(root, initialEngine) {
       checkSection: container.querySelector("#check-section"),
       checkBtn: container.querySelector("#check-btn"),
       btnNextLevel: container.querySelector("#btn-next-level"),
+
+      level16Section: container.querySelector("#level16-section"),
+      l16Counter: container.querySelector("#l16-delivery-counter"),
+      l16Chips: container.querySelector("#l16-delivery-chips"),
+      l16ReadingA: container.querySelector("#l16-reading-a"),
+      l16ReadingB: container.querySelector("#l16-reading-b"),
+      btnL16LookA: container.querySelector("#btn-l16-look-a"),
+      btnL16LookB: container.querySelector("#btn-l16-look-b"),
+      btnL16Linker: container.querySelector("#btn-l16-linker"),
+      btnL16Lens: container.querySelector("#btn-l16-lens"),
+      btnL16Unmake: container.querySelector("#btn-l16-unmake"),
+      l16LastAttempt: container.querySelector("#l16-last-attempt"),
+
       btnReset: container.querySelector("#btn-reset"),
       title: container.querySelector("#header-title"),
       goal: container.querySelector("#header-goal"),
@@ -561,6 +667,33 @@ export function mountUI(root, initialEngine) {
       })
     }
 
+    const LEVEL16_TOOL_QUBIT = "A"
+    if (els.btnL16Linker) {
+      els.btnL16Linker.addEventListener("click", () => {
+        if (currentEngine && typeof currentEngine.applyTool === "function") currentEngine.applyTool("linker", LEVEL16_TOOL_QUBIT)
+      })
+    }
+    if (els.btnL16Lens) {
+      els.btnL16Lens.addEventListener("click", () => {
+        if (currentEngine && typeof currentEngine.applyTool === "function") currentEngine.applyTool("lens", LEVEL16_TOOL_QUBIT)
+      })
+    }
+    if (els.btnL16Unmake) {
+      els.btnL16Unmake.addEventListener("click", () => {
+        if (currentEngine && typeof currentEngine.applyTool === "function") currentEngine.applyTool("unmake", LEVEL16_TOOL_QUBIT)
+      })
+    }
+    if (els.btnL16LookA) {
+      els.btnL16LookA.addEventListener("click", () => {
+        if (currentEngine && typeof currentEngine.look === "function") currentEngine.look("A", "ud")
+      })
+    }
+    if (els.btnL16LookB) {
+      els.btnL16LookB.addEventListener("click", () => {
+        if (currentEngine && typeof currentEngine.look === "function") currentEngine.look("B", "ud")
+      })
+    }
+
     // Dev selector remount logic
     const devSelect = container.querySelector("#dev-level-select")
     if (devSelect) {
@@ -722,6 +855,7 @@ export function mountUI(root, initialEngine) {
       if (els.measurementSection) els.measurementSection.hidden = true
       if (els.tableSection) els.tableSection.hidden = true
       if (els.plannerSection) els.plannerSection.hidden = true
+      if (els.level16Section) els.level16Section.hidden = true
 
       if (els.checkSection) {
         if ((state.levelId === 12 || state.levelId === 14) && state.status !== "won") {
@@ -740,6 +874,8 @@ export function mountUI(root, initialEngine) {
         renderLevel14(state)
       } else if (state.levelId === 15) {
         renderLevel15(state)
+      } else if (state.levelId === 16) {
+        renderLevel16(state)
       } else if (state.levelId === 20) {
         renderLevel20(state)
       } else {
@@ -1016,6 +1152,78 @@ export function mountUI(root, initialEngine) {
           if (els.plannerScoreCard) els.plannerScoreCard.hidden = true
         }
         renderPlanner()
+      }
+    }
+
+    function renderLevel16(state) {
+      if (els.level16Section) els.level16Section.hidden = false
+      renderWinBanner(state)
+
+      const d = state.extra.delivery
+      if (d && els.l16Counter) {
+        els.l16Counter.textContent = `Delivery ${d.index + 1} of ${d.total}`
+      }
+
+      if (d && els.l16Chips) {
+        els.l16Chips.innerHTML = ""
+        for (let i = 0; i < d.total; i++) {
+          const chip = document.createElement("span")
+          chip.style.padding = "0.5rem 1rem"
+          chip.style.borderRadius = "var(--radius-sm)"
+          chip.style.fontWeight = "bold"
+          chip.style.border = "1px solid var(--color-border-strong)"
+
+          if (i < d.index) {
+            chip.style.background = "var(--color-bg-elevated)"
+            chip.textContent = `${i + 1}: ${state.extra.decoded[i]}`
+          } else if (i === d.index) {
+            chip.style.background = "#3b82f6"
+            chip.style.color = "#fff"
+            chip.textContent = "NOW"
+          } else {
+            chip.style.background = "var(--color-bg-surface)"
+            chip.style.color = "var(--color-text-dim)"
+            chip.textContent = `${i + 1}: -`
+          }
+          els.l16Chips.appendChild(chip)
+        }
+      }
+
+      const r = state.extra.readings
+      if (r) {
+        if (els.l16ReadingA) els.l16ReadingA.textContent = r.A !== null ? r.A : "?"
+        if (els.l16ReadingB) els.l16ReadingB.textContent = r.B !== null ? r.B : "?"
+
+        if (els.btnL16LookA) {
+          if (r.A !== null) {
+            els.btnL16LookA.textContent = "Already read"
+            els.btnL16LookA.disabled = true
+            els.btnL16LookA.classList.add("btn-disabled")
+          } else {
+            els.btnL16LookA.textContent = "Look at Alice's twin"
+            els.btnL16LookA.disabled = false
+            els.btnL16LookA.classList.remove("btn-disabled")
+          }
+        }
+        if (els.btnL16LookB) {
+          if (r.B !== null) {
+            els.btnL16LookB.textContent = "Already read"
+            els.btnL16LookB.disabled = true
+            els.btnL16LookB.classList.add("btn-disabled")
+          } else {
+            els.btnL16LookB.textContent = "Look at Bob's twin"
+            els.btnL16LookB.disabled = false
+            els.btnL16LookB.classList.remove("btn-disabled")
+          }
+        }
+      }
+
+      if (els.l16LastAttempt) {
+        if (state.extra.lastAttempt && Array.isArray(state.extra.lastAttempt)) {
+          els.l16LastAttempt.textContent = `Last try: ${state.extra.lastAttempt.join(" · ")}`
+        } else {
+          els.l16LastAttempt.textContent = ""
+        }
       }
     }
 
