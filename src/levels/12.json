@@ -1,0 +1,51 @@
+{
+  "id": 12,
+  "act": 4,
+  "tier": 1,
+  "title": "Make twins",
+  "mode": "pair",
+  "newWords": [
+    "thread",
+    "pair-maker"
+  ],
+  "tools": [
+    "lens",
+    "linker"
+  ],
+  "lenses": [
+    "ud"
+  ],
+  "lockedQubits": [],
+  "start": {
+    "kind": "zero",
+    "t": 0
+  },
+  "phases": [
+    "alice"
+  ],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "state"
+  },
+  "par": 2,
+  "goalLine": "Link the two parcels with a thread.",
+  "hints": [
+    {
+      "afterFailures": 2,
+      "text": "Apply the lens-changer to parcel A first, then use the linker."
+    },
+    {
+      "afterFailures": 4,
+      "text": "Order matters: change the lens on one parcel first, then link them."
+    }
+  ],
+  "events": {
+    "no-visible-change": "Using the linker first on unlinked parcels leaves them unchanged."
+  },
+  "extra": {},
+  "physicsCheck": "check-01",
+  "removePhysicsNote": "Without the linker the parcels stay independent, so no thread ever appears."
+}
