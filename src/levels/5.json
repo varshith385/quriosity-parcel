@@ -1,0 +1,51 @@
+{
+  "id": 5,
+  "act": 2,
+  "tier": 2,
+  "title": "Two lenses",
+  "mode": "dial",
+  "newWords": [
+    "lens"
+  ],
+  "tools": [],
+  "lenses": [
+    "ud",
+    "side"
+  ],
+  "lockedQubits": [],
+  "start": {
+    "kind": "dial",
+    "t": 0
+  },
+  "phases": [
+    "alice"
+  ],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "optimise",
+    "threshold": 0.84
+  },
+  "par": 1,
+  "goalLine": "Tilt the dial so both meters read at least 84% sure.",
+  "hints": [
+    {
+      "afterFailures": 2,
+      "text": "Balance the arrow halfway between up and sideways."
+    },
+    {
+      "afterFailures": 4,
+      "text": "An angle of 45 degrees gives the best compromise between the two meters."
+    }
+  ],
+  "events": {
+    "trade-off": "Making one meter certain drops the other to a coin flip."
+  },
+  "extra": {
+    "winThreshold": 0.84
+  },
+  "physicsCheck": "check-05",
+  "removePhysicsNote": "Unlike classical objects, a parcel cannot be simultaneously certain in both lenses."
+}
