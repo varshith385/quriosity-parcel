@@ -7,34 +7,38 @@
 export function createFakeEngine(initialOverrides = {}) {
   const levelId = initialOverrides.levelId || 14
   
+  const ANSWERS = ["10","01","00","11"]
+  let unmade = false
+  let l16Tools = []
+
   let state = {
     levelId: levelId,
-    title: levelId === 12 ? "Make twins" : (levelId === 13 ? "Twins' facts" : (levelId === 15 ? "Your own codebook" : (levelId === 20 ? "Network Plan" : "One-hand writing"))),
-    goalLine: levelId === 12 ? "Produce two linked parcels." : (levelId === 13 ? "Read the twins and complete the fact table." : (levelId === 15 ? "Map each move to its light pattern." : (levelId === 20 ? "Plan a sequence to deliver the messages within budget." : "Make the lights match the target message."))),
-    mode: levelId === 20 ? "post" : "pair",
+    title: levelId === 12 ? "Make twins" : (levelId === 13 ? "Twins' facts" : (levelId === 15 ? "Your own codebook" : (levelId === 16 ? "Unmake" : (levelId === 20 ? "Network Plan" : "One-hand writing")))),
+    goalLine: levelId === 12 ? "Produce two linked parcels." : (levelId === 13 ? "Read the twins and complete the fact table." : (levelId === 15 ? "Map each move to its light pattern." : (levelId === 16 ? "Turn each delivery into its two bits." : (levelId === 20 ? "Plan a sequence to deliver the messages within budget." : "Make the lights match the target message.")))),
+    mode: (levelId === 16 || levelId === 20) ? "post" : "pair",
     tier: 1,
-    newWords: levelId === 12 ? ["lens-changer", "linker"] : ["flip", "twist"],
-    target: (levelId === 12 || levelId === 13 || levelId === 15) ? null : (levelId === 20 ? { type: "budget" } : { type: "message", bits: "10" }),
-    phase: "alice",
+    newWords: levelId === 12 ? ["lens-changer", "linker"] : (levelId === 16 ? [] : ["flip", "twist"]),
+    target: (levelId === 12 || levelId === 13 || levelId === 15) ? null : (levelId === 16 ? { type: "stream" } : (levelId === 20 ? { type: "budget" } : { type: "message", bits: "10" })),
+    phase: levelId === 16 ? "bob" : "alice",
     state: levelId === 12 ? [1, 0, 0, 0] : [1 / Math.SQRT2, 0, 0, 1 / Math.SQRT2],
     dial: null,
-    toolsAvailable: levelId === 12 ? ["lens", "linker"] : (levelId === 13 ? [] : ["flip", "twist"]),
+    toolsAvailable: levelId === 12 ? ["lens", "linker"] : (levelId === 13 ? [] : (levelId === 16 ? ["lens", "linker"] : ["flip", "twist"])),
     lenses: levelId === 13 ? ["ud", "side"] : ["ud"],
-    lockedQubits: (levelId === 12 || levelId === 13) ? [] : ["B"],
+    lockedQubits: (levelId === 12 || levelId === 13 || levelId === 16) ? [] : ["B"],
     thread: levelId === 12 ? false : true,
-    lights: (levelId === 12 || levelId === 13) ? null : { zz: "agree", xx: "agree" },
+    lights: (levelId === 12 || levelId === 13 || levelId === 16) ? null : { zz: "agree", xx: "agree" },
     meters: null,
     tally: levelId === 13 ? { ud: [0, 0], side: [0, 0] } : null,
     moveLog: [],
     moveCount: 0,
     failureCount: 0,
-    par: 2,
+    par: levelId === 16 ? 8 : 2,
     stars: 0,
     extra: {},
     status: "playing",
     feedback: {
       kind: "info",
-      text: levelId === 12 ? "Apply the lens-changer and the linker." : (levelId === 13 ? "Choose a lens and read both twins." : (levelId === 15 ? "Try moves to fill the codebook." : (levelId === 20 ? "Create a plan." : "Alice acts on her twin only. Bob's twin is locked.")))
+      text: levelId === 12 ? "Apply the lens-changer and the linker." : (levelId === 13 ? "Choose a lens and read both twins." : (levelId === 15 ? "Try moves to fill the codebook." : (levelId === 16 ? "Ready to start the first delivery." : (levelId === 20 ? "Create a plan." : "Alice acts on her twin only. Bob's twin is locked."))))
     },
     score: null,
     progress: {
@@ -45,22 +49,36 @@ export function createFakeEngine(initialOverrides = {}) {
   }
 
   if (levelId === 13) {
-    state.extra.factTable = [
-      { id: "ud", label: "When both are read up-down..." },
-      { id: "side", label: "When both are read sideways..." }
+    state.extra.rows = [
+      { id: "ud", label: "Up-down lens" },
+      { id: "side", label: "Sideways lens" }
     ]
+    state.extra.columns = [
+      { id: "alone", label: "One twin alone" },
+      { id: "together", label: "Twins compared" }
+    ]
+    state.extra.options = ["random", "agree", "differ"]
     state.extra.control = false
     state.lenses = ["ud", "side"]
   } else if (levelId === 15) {
-    state.extra.codebook = [
-      { id: "I", label: "Nothing" },
-      { id: "X", label: "Flip" },
-      { id: "Z", label: "Twist" },
-      { id: "XZ", label: "Twist then Flip" }
-    ]
+    state.extra.codebook = {
+      rows: [
+        { id: "nothing", moves: [] },
+        { id: "flip", moves: ["flip"] },
+        { id: "twist", moves: ["twist"] },
+        { id: "both", moves: ["twist", "flip"] }
+      ]
+    }
     state.lenses = ["ud"]
   } else if (levelId === 14) {
     state.lenses = ["ud", "side"]
+  } else if (levelId === 16) {
+    state.extra.delivery = { index: 0, total: 4 }
+    state.extra.decoded = []
+    state.extra.readings = { A: null, B: null }
+    state.extra.lastAttempt = null
+    state.toolsAvailable = ["lens", "linker"]
+    state.par = 8
   } else if (levelId === 20) {
     state.extra.messages = [
       { id: "m1", bits: "1" },
@@ -117,10 +135,10 @@ export function createFakeEngine(initialOverrides = {}) {
           const hasLens = state.moveLog.filter(m => m === "lens").length % 2 === 1;
           if (hasLens) {
             state.state = [1 / Math.SQRT2, 0, 1 / Math.SQRT2, 0]
-            state.feedback = { kind: "info", text: "Lens-changer applied. Qubit A is now a mix." }
+            state.feedback = { kind: "info", text: "Lens-changer applied to Alice's twin." }
           } else {
             state.state = [1, 0, 0, 0]
-            state.feedback = { kind: "info", text: "Lens-changer applied again. Qubit A is returned to zero." }
+            state.feedback = { kind: "info", text: "Lens-changer applied to Alice's twin again." }
           }
         } else if (name === "linker") {
           // Linker (CNOT A->B)
@@ -133,6 +151,16 @@ export function createFakeEngine(initialOverrides = {}) {
           } else {
             state.feedback = { kind: "hint", text: "Linker applied, but nothing happened. State stayed |00>." }
           }
+        }
+      } else if (state.levelId === 16) {
+        state.moveCount = (state.moveCount || 0) + 1
+        l16Tools.push(name)
+        if (l16Tools.join(",") === "linker,lens") {
+          unmade = true
+          state.feedback = { kind: "info", text: "Ready to read." }
+        } else {
+          unmade = false
+          state.feedback = { kind: "info", text: "Nothing new came out of that step." }
         }
       } else {
         // Level 14 logic
@@ -198,33 +226,113 @@ export function createFakeEngine(initialOverrides = {}) {
   function look(qubit, lens) {
     if (state.levelId === 13) {
       if (!state.tally) state.tally = { ud: [0, 0], side: [0, 0] }
+      if (!state.extra.pairReadings) state.extra.pairReadings = { ud: [], side: [] }
+      if (!state.extra._pendingLook) state.extra._pendingLook = {}
+
+      if (state.extra._pendingLook[qubit]) {
+        state.feedback = { kind: "info", text: `Already looked at ${qubit === "A" ? "Alice's" : "Bob's"} twin.` }
+        notify()
+        return
+      }
+
+      state.extra._pendingLook[qubit] = true
+
       // Mock logic: Twins always agree, so we always increment bin 0 for 'ud' and bin 1 for 'side'
       const bin = lens === "ud" ? 0 : 1
       state.tally[lens][bin]++
       
-      state.feedback = { kind: "info", text: `Looked at twin ${qubit} ${lens === "ud" ? "up-down" : "sideways"}.` }
+      if (state.extra._pendingLook.A && state.extra._pendingLook.B) {
+        state.extra._pendingLook = {} // Fresh pair for next round
+        const a = Math.random() < 0.5 ? 0 : 1
+        const b = a
+        state.extra.pairReadings[lens].push({ a, b })
+        if (state.extra.pairReadings[lens].length > 10) {
+          state.extra.pairReadings[lens].shift()
+        }
+      }
+
+      state.feedback = { kind: "info", text: `Looked at ${qubit === "A" ? "Alice's" : "Bob's"} twin ${lens === "ud" ? "up-down" : "sideways"}.` }
+      notify()
+    } else if (state.levelId === 16) {
+      if (state.extra.readings[qubit] !== null) {
+        state.feedback = { kind: "info", text: "You already read that twin in this delivery." }
+        notify()
+        return
+      }
+      const currentAnswer = ANSWERS[state.extra.delivery.index]
+      let bit
+      if (unmade) {
+        bit = qubit === "A" ? currentAnswer[0] : currentAnswer[1]
+      } else {
+        bit = Math.random() < 0.5 ? "0" : "1"
+      }
+      state.extra.readings[qubit] = bit
+
+      if (state.extra.readings.A !== null && state.extra.readings.B !== null) {
+        const decodedStr = state.extra.readings.A + state.extra.readings.B
+        state.extra.decoded.push(decodedStr)
+
+        if (state.extra.delivery.index < 3) {
+          state.extra.delivery.index += 1
+          state.extra.readings = { A: null, B: null }
+          unmade = false
+          l16Tools = []
+        } else {
+          let allMatch = true
+          for (let i = 0; i < 4; i++) {
+            if (state.extra.decoded[i] !== ANSWERS[i]) allMatch = false
+          }
+          if (allMatch) {
+            state.status = "won"
+            state.stars = state.moveCount <= state.par ? 3 : (state.moveCount <= state.par * 2 ? 2 : 1)
+          } else {
+            state.failureCount = (state.failureCount || 0) + 1
+            state.extra.lastAttempt = [...state.extra.decoded]
+
+            state.extra.delivery.index = 0
+            state.extra.decoded = []
+            state.extra.readings = { A: null, B: null }
+            unmade = false
+            l16Tools = []
+
+            state.feedback = { kind: "hint", text: "Not quite. Try again." }
+          }
+        }
+      }
       notify()
     }
   }
 
   function submit(answer) {
     if (state.levelId === 13) {
-      if (answer && answer.cells && answer.cells.ud === "agree" && answer.cells.side === "agree") {
+      const c = answer && answer.cells
+      const correct = c
+        && c["ud.alone"] === "random"
+        && c["ud.together"] === "agree"
+        && c["side.alone"] === "random"
+        && c["side.together"] === "agree"
+      if (correct) {
         state.status = "won"
         state.stars = 3
         state.feedback = { kind: "info", text: "Correct! Twins always agree when read in the same lens." }
       } else {
         state.failureCount = (state.failureCount || 0) + 1
-        state.feedback = { kind: "blocked", text: "Not quite right. Look at the tally again." }
+        state.feedback = { kind: "hint", text: "Not quite right. Try again!" }
       }
     } else if (state.levelId === 15) {
-      if (answer && answer.cells && answer.cells.I === "00" && answer.cells.X === "01" && answer.cells.Z === "10" && answer.cells.XZ === "11") {
+      const c = answer && answer.cells
+      const correct = c
+        && c.nothing && c.nothing.zz === "agree" && c.nothing.xx === "agree"
+        && c.flip && c.flip.zz === "differ" && c.flip.xx === "agree"
+        && c.twist && c.twist.zz === "agree" && c.twist.xx === "differ"
+        && c.both && c.both.zz === "differ" && c.both.xx === "differ"
+      if (correct) {
         state.status = "won"
         state.stars = 3
         state.feedback = { kind: "info", text: "Codebook complete!" }
       } else {
         state.failureCount = (state.failureCount || 0) + 1
-        state.feedback = { kind: "blocked", text: "Some patterns are wrong." }
+        state.feedback = { kind: "hint", text: "Not quite right. Try again!" }
       }
     } else if (state.levelId === 20) {
       if (answer && answer.plan) {
@@ -269,6 +377,18 @@ export function createFakeEngine(initialOverrides = {}) {
       state.status = "playing"
       state.stars = 0
       state.feedback = { kind: "info", text: "Reset: Try to make twins." }
+    } else if (state.levelId === 16) {
+      state.moveCount = 0
+      state.failureCount = 0
+      state.extra.delivery.index = 0
+      state.extra.decoded = []
+      state.extra.readings = { A: null, B: null }
+      state.extra.lastAttempt = null
+      unmade = false
+      l16Tools = []
+      state.status = "playing"
+      state.stars = 0
+      state.feedback = { kind: "info", text: "Ready to start the first delivery." }
     } else {
       state.lights = {
         zz: "agree",
