@@ -17,12 +17,12 @@ export function createFakeEngine(initialOverrides = {}) {
     goalLine: levelId === 12 ? "Produce two linked parcels." : (levelId === 13 ? "Read the twins and complete the fact table." : (levelId === 15 ? "Map each move to its light pattern." : (levelId === 16 ? "Turn each delivery into its two bits." : (levelId === 20 ? "Plan a sequence to deliver the messages within budget." : "Make the lights match the target message.")))),
     mode: (levelId === 16 || levelId === 20) ? "post" : "pair",
     tier: 1,
-    newWords: levelId === 12 ? ["lens-changer", "linker"] : (levelId === 16 ? ["unmake"] : ["flip", "twist"]),
+    newWords: levelId === 12 ? ["lens-changer", "linker"] : (levelId === 16 ? [] : ["flip", "twist"]),
     target: (levelId === 12 || levelId === 13 || levelId === 15) ? null : (levelId === 16 ? { type: "stream" } : (levelId === 20 ? { type: "budget" } : { type: "message", bits: "10" })),
     phase: levelId === 16 ? "bob" : "alice",
     state: levelId === 12 ? [1, 0, 0, 0] : [1 / Math.SQRT2, 0, 0, 1 / Math.SQRT2],
     dial: null,
-    toolsAvailable: levelId === 12 ? ["lens", "linker"] : (levelId === 13 ? [] : (levelId === 16 ? ["lens", "linker", "unmake"] : ["flip", "twist"])),
+    toolsAvailable: levelId === 12 ? ["lens", "linker"] : (levelId === 13 ? [] : (levelId === 16 ? ["lens", "linker"] : ["flip", "twist"])),
     lenses: levelId === 13 ? ["ud", "side"] : ["ud"],
     lockedQubits: (levelId === 12 || levelId === 13 || levelId === 16) ? [] : ["B"],
     thread: levelId === 12 ? false : true,
@@ -32,7 +32,7 @@ export function createFakeEngine(initialOverrides = {}) {
     moveLog: [],
     moveCount: 0,
     failureCount: 0,
-    par: levelId === 16 ? 4 : 2,
+    par: levelId === 16 ? 8 : 2,
     stars: 0,
     extra: {},
     status: "playing",
@@ -77,6 +77,8 @@ export function createFakeEngine(initialOverrides = {}) {
     state.extra.decoded = []
     state.extra.readings = { A: null, B: null }
     state.extra.lastAttempt = null
+    state.toolsAvailable = ["lens", "linker"]
+    state.par = 8
   } else if (levelId === 20) {
     state.extra.messages = [
       { id: "m1", bits: "1" },
@@ -133,10 +135,10 @@ export function createFakeEngine(initialOverrides = {}) {
           const hasLens = state.moveLog.filter(m => m === "lens").length % 2 === 1;
           if (hasLens) {
             state.state = [1 / Math.SQRT2, 0, 1 / Math.SQRT2, 0]
-            state.feedback = { kind: "info", text: "Lens-changer applied. Qubit A is now a mix." }
+            state.feedback = { kind: "info", text: "Lens-changer applied to Alice's twin." }
           } else {
             state.state = [1, 0, 0, 0]
-            state.feedback = { kind: "info", text: "Lens-changer applied again. Qubit A is returned to zero." }
+            state.feedback = { kind: "info", text: "Lens-changer applied to Alice's twin again." }
           }
         } else if (name === "linker") {
           // Linker (CNOT A->B)
@@ -153,10 +155,9 @@ export function createFakeEngine(initialOverrides = {}) {
       } else if (state.levelId === 16) {
         state.moveCount = (state.moveCount || 0) + 1
         l16Tools.push(name)
-        if (name === "unmake") {
+        if (l16Tools.join(",") === "linker,lens") {
           unmade = true
-        } else if (l16Tools.length >= 2 && l16Tools[l16Tools.length - 2] === "linker" && l16Tools[l16Tools.length - 1] === "lens") {
-          unmade = true
+          state.feedback = { kind: "info", text: "Ready to read." }
         } else {
           unmade = false
           state.feedback = { kind: "info", text: "Nothing new came out of that step." }
@@ -229,7 +230,7 @@ export function createFakeEngine(initialOverrides = {}) {
       const bin = lens === "ud" ? 0 : 1
       state.tally[lens][bin]++
       
-      state.feedback = { kind: "info", text: `Looked at twin ${qubit} ${lens === "ud" ? "up-down" : "sideways"}.` }
+      state.feedback = { kind: "info", text: `Looked at ${qubit === "A" ? "Alice's" : "Bob's"} twin ${lens === "ud" ? "up-down" : "sideways"}.` }
       notify()
     } else if (state.levelId === 16) {
       if (state.extra.readings[qubit] !== null) {
@@ -237,7 +238,6 @@ export function createFakeEngine(initialOverrides = {}) {
         notify()
         return
       }
-      state.moveCount = (state.moveCount || 0) + 1
       const currentAnswer = ANSWERS[state.extra.delivery.index]
       let bit
       if (unmade) {
@@ -274,15 +274,7 @@ export function createFakeEngine(initialOverrides = {}) {
             unmade = false
             l16Tools = []
 
-            let hintText = "Not quite. Try again."
-            if (state.failureCount >= 6) {
-              hintText = "Run the linker, then the lens-changer, then look at each twin once."
-            } else if (state.failureCount >= 4) {
-              hintText = "Undo means the same steps in reverse order."
-            } else if (state.failureCount >= 2) {
-              hintText = "Looking at each twin on its own gives nothing steady. Undo Alice's machine first."
-            }
-            state.feedback = { kind: "hint", text: hintText }
+            state.feedback = { kind: "hint", text: "Not quite. Try again." }
           }
         }
       }

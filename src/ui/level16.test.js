@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createFakeEngine } from './fakeEngine.js'
+import { mountUI } from './index.js'
 
 describe('FakeEngine for Level 16', () => {
   let engine
@@ -20,6 +21,8 @@ describe('FakeEngine for Level 16', () => {
     const state = engine.getRenderState()
     expect(state.status).toBe('won')
     expect(state.extra.decoded).toEqual(['10', '01', '00', '11'])
+    expect(state.moveCount).toBe(8)
+    expect(state.stars).toBe(3)
   })
 
   it('looking twice at the same twin does not change the reading', () => {
@@ -43,5 +46,33 @@ describe('FakeEngine for Level 16', () => {
     
     expect(str).not.toContain('"messages":')
     expect(state.extra.messages).toBeUndefined()
+  })
+
+  it('renders level 16 UI correctly', () => {
+    if (typeof document === 'undefined') {
+      const state = engine.getRenderState()
+      expect(state.toolsAvailable).toEqual(['lens', 'linker'])
+      expect(state.toolsAvailable).not.toContain('unmake')
+    } else {
+      document.body.innerHTML = '<div id="root"></div>'
+      mountUI(document.getElementById('root'), engine)
+
+      const section = document.getElementById('level16-section')
+      expect(section).not.toBeNull()
+      expect(section.hidden).toBe(false)
+
+      const lookA = document.getElementById('btn-l16-look-a')
+      const lookB = document.getElementById('btn-l16-look-b')
+      expect(lookA).not.toBeNull()
+      expect(lookB).not.toBeNull()
+
+      const toolBtns = document.querySelectorAll('#l16-buttons-grid .tool-btn')
+      expect(toolBtns.length).toBe(2)
+
+      const tools = Array.from(toolBtns).map(b => b.dataset.tool)
+      expect(tools).toContain('lens')
+      expect(tools).toContain('linker')
+      expect(tools).not.toContain('unmake')
+    }
   })
 })

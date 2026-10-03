@@ -75,10 +75,7 @@ export function mountUI(root, initialEngine) {
               </div>
               <div class="target-rule-hint" id="target-rule-hint"></div>
             </div>
-            <div class="target-status-box" id="target-status-box">
-              <span class="current-label">Current Pair Message:</span>
-              <span class="current-value" id="current-bits-display"></span>
-              <span class="status-pill" id="target-match-pill"></span>
+            <div class="target-status-box" id="target-status-box" hidden>
             </div>
           </div>
         </header>
@@ -139,9 +136,6 @@ export function mountUI(root, initialEngine) {
                 </div>
               </div>
               <div class="light-explanation" id="light-zz-desc"></div>
-              <div class="light-control-tag">
-                Controlled by: <strong>Flip</strong>
-              </div>
             </div>
 
             <!-- LIGHT 2: SHAPE LIGHT (XX) -->
@@ -161,9 +155,6 @@ export function mountUI(root, initialEngine) {
                 </div>
               </div>
               <div class="light-explanation" id="light-xx-desc"></div>
-              <div class="light-control-tag">
-                Controlled by: <strong>Twist</strong>
-              </div>
             </div>
           </div>
         </section>
@@ -174,7 +165,6 @@ export function mountUI(root, initialEngine) {
           <article class="twin-card twin-alice" id="card-alice">
             <div class="twin-card-header">
               <div class="twin-header-text">
-                <span class="twin-role-tag">QUBIT A</span>
                 <h2 class="twin-title">Alice's Twin</h2>
               </div>
               <span class="twin-status-pill status-active" id="alice-status-pill">
@@ -257,7 +247,6 @@ export function mountUI(root, initialEngine) {
           <article class="twin-card twin-bob" id="card-bob" tabindex="0" role="region" aria-label="Bob's Twin Parcel">
             <div class="twin-card-header">
               <div class="twin-header-text">
-                <span class="twin-role-tag">QUBIT B</span>
                 <h2 class="twin-title">Bob's Twin</h2>
               </div>
               <span class="twin-status-pill" id="bob-status-pill">
@@ -357,7 +346,7 @@ export function mountUI(root, initialEngine) {
             </div>
           </div>
 
-          <p class="planner-rules" style="margin-bottom: 12px; font-size: 0.9em; opacity: 0.9;">A parcel carries 1 bit. With a twin it can carry 2 bits. Each twin can be used once. A parcel carries bits of one message only.</p>
+          <p class="planner-rules" style="margin-bottom: 12px; font-size: 0.9em; opacity: 0.9;">A plain parcel delivers 1 bit. A parcel sent with a twin can deliver 2 bits. Each twin is used up once. A parcel carries bits of one message only.</p>
 
           <div class="planner-messages" id="planner-messages">
           </div>
@@ -388,7 +377,6 @@ export function mountUI(root, initialEngine) {
             <article class="twin-card twin-alice" style="border: 2px solid var(--color-border-strong);">
               <div class="twin-card-header">
                 <div class="twin-header-text">
-                  <span class="twin-role-tag">QUBIT A</span>
                   <h2 class="twin-title">Alice's Twin</h2>
                 </div>
                 <span class="twin-status-pill status-active">
@@ -416,7 +404,6 @@ export function mountUI(root, initialEngine) {
             <article class="twin-card twin-bob" style="border: 2px solid var(--color-border-strong);">
               <div class="twin-card-header">
                 <div class="twin-header-text">
-                  <span class="twin-role-tag">QUBIT B</span>
                   <h2 class="twin-title">Bob's Twin</h2>
                 </div>
                 <span class="twin-status-pill status-active">
@@ -440,28 +427,7 @@ export function mountUI(root, initialEngine) {
 
           <div class="l16-tools" style="background: var(--color-bg-surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border-subtle); margin-bottom: 1.5rem;">
             <span class="controls-label" style="display: block; margin-bottom: 1rem; font-weight: bold;">Bob's Tools:</span>
-            <div class="buttons-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
-              <button type="button" class="tool-btn btn-linker" id="btn-l16-linker" aria-label="Apply Linker move">
-                <div class="btn-top">
-                  <span class="tool-icon linker-icon" aria-hidden="true">🔗</span>
-                  <span class="tool-name">LINKER</span>
-                </div>
-                <span class="tool-desc">Acts on both twins</span>
-              </button>
-              <button type="button" class="tool-btn btn-lens" id="btn-l16-lens" aria-label="Apply Lens-changer move">
-                <div class="btn-top">
-                  <span class="tool-icon lens-icon" aria-hidden="true"></span>
-                  <span class="tool-name">LENS-CHANGER</span>
-                </div>
-                <span class="tool-desc">Acts on one twin</span>
-              </button>
-              <button type="button" class="tool-btn btn-unmake" id="btn-l16-unmake" aria-label="Apply Unmake move">
-                <div class="btn-top">
-                  <span class="tool-icon" aria-hidden="true">⏪</span>
-                  <span class="tool-name">UNMAKE</span>
-                </div>
-                <span class="tool-desc">Runs the pair-maker backwards</span>
-              </button>
+            <div class="buttons-grid" id="l16-buttons-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
             </div>
           </div>
 
@@ -487,10 +453,8 @@ export function mountUI(root, initialEngine) {
       l16ReadingB: container.querySelector("#l16-reading-b"),
       btnL16LookA: container.querySelector("#btn-l16-look-a"),
       btnL16LookB: container.querySelector("#btn-l16-look-b"),
-      btnL16Linker: container.querySelector("#btn-l16-linker"),
-      btnL16Lens: container.querySelector("#btn-l16-lens"),
-      btnL16Unmake: container.querySelector("#btn-l16-unmake"),
       l16LastAttempt: container.querySelector("#l16-last-attempt"),
+      l16ButtonsGrid: container.querySelector("#l16-buttons-grid"),
 
       btnReset: container.querySelector("#btn-reset"),
       title: container.querySelector("#header-title"),
@@ -668,19 +632,14 @@ export function mountUI(root, initialEngine) {
     }
 
     const LEVEL16_TOOL_QUBIT = "A"
-    if (els.btnL16Linker) {
-      els.btnL16Linker.addEventListener("click", () => {
-        if (currentEngine && typeof currentEngine.applyTool === "function") currentEngine.applyTool("linker", LEVEL16_TOOL_QUBIT)
-      })
-    }
-    if (els.btnL16Lens) {
-      els.btnL16Lens.addEventListener("click", () => {
-        if (currentEngine && typeof currentEngine.applyTool === "function") currentEngine.applyTool("lens", LEVEL16_TOOL_QUBIT)
-      })
-    }
-    if (els.btnL16Unmake) {
-      els.btnL16Unmake.addEventListener("click", () => {
-        if (currentEngine && typeof currentEngine.applyTool === "function") currentEngine.applyTool("unmake", LEVEL16_TOOL_QUBIT)
+    if (els.l16ButtonsGrid) {
+      els.l16ButtonsGrid.addEventListener("click", (e) => {
+        const btn = e.target.closest(".tool-btn")
+        if (!btn) return
+        const tool = btn.dataset.tool
+        if (currentEngine && typeof currentEngine.applyTool === "function") {
+          currentEngine.applyTool(tool, LEVEL16_TOOL_QUBIT)
+        }
       })
     }
     if (els.btnL16LookA) {
@@ -838,7 +797,14 @@ export function mountUI(root, initialEngine) {
         if (state.levelId === 20) els.moves.hidden = true;
         else {
           els.moves.hidden = false;
-          const parText = state.par !== undefined ? ` / Par: ${state.par}` : ""
+          let parText = ""
+          if (state.par !== undefined) {
+             if (state.levelId === 16) {
+                parText = ` · Par: ${state.par}`
+             } else {
+                parText = ` / Par: ${state.par}`
+             }
+          }
           els.moves.textContent = `Moves: ${state.moveCount || 0}${parText}`
         }
       }
@@ -1214,7 +1180,8 @@ export function mountUI(root, initialEngine) {
       if (els.level16Section) els.level16Section.hidden = false
       renderWinBanner(state)
 
-      const d = state.extra.delivery
+      const extra = state.extra || {}
+      const d = extra.delivery
       if (d && els.l16Counter) {
         els.l16Counter.textContent = `Delivery ${d.index + 1} of ${d.total}`
       }
@@ -1230,7 +1197,8 @@ export function mountUI(root, initialEngine) {
 
           if (i < d.index) {
             chip.style.background = "var(--color-bg-elevated)"
-            chip.textContent = `${i + 1}: ${state.extra.decoded[i]}`
+            const decoded = extra.decoded || []
+            chip.textContent = `${i + 1}: ${decoded[i] !== undefined ? decoded[i] : "-"}`
           } else if (i === d.index) {
             chip.style.background = "#3b82f6"
             chip.style.color = "#fff"
@@ -1244,7 +1212,7 @@ export function mountUI(root, initialEngine) {
         }
       }
 
-      const r = state.extra.readings
+      const r = extra.readings
       if (r) {
         if (els.l16ReadingA) els.l16ReadingA.textContent = r.A !== null ? r.A : "?"
         if (els.l16ReadingB) els.l16ReadingB.textContent = r.B !== null ? r.B : "?"
@@ -1273,9 +1241,37 @@ export function mountUI(root, initialEngine) {
         }
       }
 
+      if (els.l16ButtonsGrid) {
+        let toolsHtml = ""
+        const tools = state.toolsAvailable || []
+        tools.forEach(tool => {
+          let name = tool.toUpperCase()
+          let desc = ""
+          let icon = ""
+          if (tool === "linker") {
+            desc = "Acts on both twins"
+            icon = "🔗"
+          } else if (tool === "lens") {
+            name = "LENS-CHANGER"
+            desc = "Acts on one twin"
+            icon = ""
+          }
+          toolsHtml += `
+            <button type="button" class="tool-btn btn-${tool}" data-tool="${tool}">
+              <div class="btn-top">
+                <span class="tool-icon" aria-hidden="true">${icon}</span>
+                <span class="tool-name">${name}</span>
+              </div>
+              <span class="tool-desc">${desc}</span>
+            </button>
+          `
+        })
+        els.l16ButtonsGrid.innerHTML = toolsHtml
+      }
+
       if (els.l16LastAttempt) {
-        if (state.extra.lastAttempt && Array.isArray(state.extra.lastAttempt)) {
-          els.l16LastAttempt.textContent = `Last try: ${state.extra.lastAttempt.join(" · ")}`
+        if (extra.lastAttempt && Array.isArray(extra.lastAttempt)) {
+          els.l16LastAttempt.textContent = `Last try: ${extra.lastAttempt.join(" · ")}`
         } else {
           els.l16LastAttempt.textContent = ""
         }
