@@ -28,14 +28,15 @@
     "road": null
   },
   "target": {
-    "type": "state"
+    "type": "state",
+    "thread": true
   },
   "par": 2,
   "goalLine": "Link the two parcels with a thread.",
   "hints": [
     {
       "afterFailures": 2,
-      "text": "Apply the lens-changer to parcel A first, then use the linker."
+      "text": "Two separate parcels aren't linked yet. Something has to join them."
     },
     {
       "afterFailures": 4,
