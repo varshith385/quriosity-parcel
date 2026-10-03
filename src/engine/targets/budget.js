@@ -29,8 +29,8 @@ export function check(level, context, answer) {
   if (
     typeof parcelBudget !== 'number' ||
     typeof twinBudget !== 'number' ||
-    Number.isNaN(parcelBudget) ||
-    Number.isNaN(twinBudget)
+    !Number.isFinite(parcelBudget) ||
+    !Number.isFinite(twinBudget)
   ) {
     return { ok: false, detail: 'missing budget limits' }
   }

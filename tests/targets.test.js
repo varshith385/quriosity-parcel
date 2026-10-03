@@ -207,10 +207,54 @@ describe('Tier 1 Checker: budget.js', () => {
         messages: [{ id: 'm1', bits: '0' }],
       },
     }
-    const res = checkBudget(levelNoBudget, {}, {
-      plan: [{ messageId: 'm1', chunk: '0', useTwin: false }],
-    })
-    expect(res).toEqual({ ok: false, detail: 'missing budget limits' })
+    expect(
+      checkBudget(levelNoBudget, {}, {
+        plan: [{ messageId: 'm1', chunk: '0', useTwin: false }],
+      })
+    ).toEqual({ ok: false, detail: 'missing budget limits' })
+
+    const levelMissingTwins = {
+      id: 20,
+      target: {
+        type: 'budget',
+        messages: [{ id: 'm1', bits: '0' }],
+        parcelBudget: 7,
+      },
+    }
+    expect(
+      checkBudget(levelMissingTwins, {}, {
+        plan: [{ messageId: 'm1', chunk: '0', useTwin: false }],
+      })
+    ).toEqual({ ok: false, detail: 'missing budget limits' })
+
+    const levelMissingParcels = {
+      id: 20,
+      target: {
+        type: 'budget',
+        messages: [{ id: 'm1', bits: '0' }],
+        twinBudget: 3,
+      },
+    }
+    expect(
+      checkBudget(levelMissingParcels, {}, {
+        plan: [{ messageId: 'm1', chunk: '0', useTwin: false }],
+      })
+    ).toEqual({ ok: false, detail: 'missing budget limits' })
+
+    const levelWithInfinity = {
+      id: 20,
+      target: {
+        type: 'budget',
+        messages: [{ id: 'm1', bits: '0' }],
+        parcelBudget: Infinity,
+        twinBudget: 3,
+      },
+    }
+    expect(
+      checkBudget(levelWithInfinity, {}, {
+        plan: [{ messageId: 'm1', chunk: '0', useTwin: false }],
+      })
+    ).toEqual({ ok: false, detail: 'missing budget limits' })
   })
 
   it('accepts optimal 7-parcel, 3-twin plan for Level 20', () => {
