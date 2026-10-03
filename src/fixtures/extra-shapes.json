@@ -1,0 +1,125 @@
+{
+  "level13_fact_table": {
+    "target": {
+      "type": "table"
+    },
+    "extra": {
+      "control": false,
+      "rows": [
+        { "id": "ud", "label": "Up-down lens" },
+        { "id": "side", "label": "Sideways lens" }
+      ],
+      "columns": [
+        { "id": "alone", "label": "One twin alone" },
+        { "id": "together", "label": "Twins compared" }
+      ],
+      "options": ["random", "agree", "differ"]
+    },
+    "answer": {
+      "cells": {
+        "ud.alone": "random",
+        "ud.together": "agree",
+        "side.alone": "random",
+        "side.together": "agree"
+      }
+    }
+  },
+  "level13_control_variant": {
+    "target": {
+      "type": "table"
+    },
+    "extra": {
+      "control": true,
+      "rows": [
+        { "id": "ud", "label": "Up-down lens" },
+        { "id": "side", "label": "Sideways lens" }
+      ],
+      "columns": [
+        { "id": "alone", "label": "One twin alone" },
+        { "id": "together", "label": "Twins compared" }
+      ],
+      "options": ["random", "agree", "differ"]
+    },
+    "answer": {
+      "cells": {
+        "ud.alone": "random",
+        "ud.together": "random",
+        "side.alone": "random",
+        "side.together": "random"
+      }
+    }
+  },
+  "level15_codebook": {
+    "target": {
+      "type": "table"
+    },
+    "extra": {
+      "codebook": {
+        "rows": [
+          { "id": "nothing", "moves": [] },
+          { "id": "flip", "moves": ["flip"] },
+          { "id": "twist", "moves": ["twist"] },
+          { "id": "both", "moves": ["twist", "flip"] }
+        ]
+      }
+    },
+    "answer": {
+      "cells": {
+        "nothing": { "zz": "agree", "xx": "agree" },
+        "flip": { "zz": "differ", "xx": "agree" },
+        "twist": { "zz": "agree", "xx": "differ" },
+        "both": { "zz": "differ", "xx": "differ" }
+      }
+    }
+  },
+  "stream_levels_16_17_19": {
+    "target": {
+      "type": "stream"
+    },
+    "extra": {
+      "messages": ["10", "01", "00", "11"]
+    },
+    "answer": {
+      "bits": ["10", "01", "00", "11"]
+    }
+  },
+  "budget_level20": {
+    "target": {
+      "type": "budget"
+    },
+    "extra": {
+      "messages": [
+        { "id": "m1", "bits": "1" },
+        { "id": "m2", "bits": "10" },
+        { "id": "m3", "bits": "101" },
+        { "id": "m4", "bits": "1011" }
+      ],
+      "budget": {
+        "parcels": 6,
+        "twins": 3
+      }
+    },
+    "answer": {
+      "plan": [
+        { "messageId": "m1", "chunk": "1", "useTwin": false },
+        { "messageId": "m2", "chunk": "10", "useTwin": true },
+        { "messageId": "m3", "chunk": "10", "useTwin": true },
+        { "messageId": "m3", "chunk": "1", "useTwin": false },
+        { "messageId": "m4", "chunk": "10", "useTwin": true },
+        { "messageId": "m4", "chunk": "11", "useTwin": false }
+      ]
+    }
+  },
+  "compare_level18": {
+    "target": {
+      "type": "compare",
+      "expected": "same"
+    },
+    "extra": {
+      "spyMessages": ["00", "01", "10", "11"]
+    },
+    "answer": {
+      "answer": "same"
+    }
+  }
+}

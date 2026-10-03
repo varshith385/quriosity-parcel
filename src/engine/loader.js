@@ -5,41 +5,42 @@
  */
 
 export function normalizeLevel(raw = {}) {
-  const id = Number(raw.id) || 1
+  const input = raw || {}
+  const id = Number(input.id) || 1
   return {
     id,
-    act: Number(raw.act) || 1,
-    tier: Number(raw.tier) || 1,
-    title: raw.title || `Level ${id}`,
-    mode: raw.mode || 'pair',
-    newWords: Array.isArray(raw.newWords) ? raw.newWords : [],
-    tools: Array.isArray(raw.tools)
-      ? raw.tools
-      : Array.isArray(raw.toolsAvailable)
-        ? raw.toolsAvailable
+    act: Number(input.act) || 1,
+    tier: Number(input.tier) || 1,
+    title: input.title || `Level ${id}`,
+    mode: input.mode || 'pair',
+    newWords: Array.isArray(input.newWords) ? input.newWords : [],
+    tools: Array.isArray(input.tools)
+      ? input.tools
+      : Array.isArray(input.toolsAvailable)
+        ? input.toolsAvailable
         : [],
-    lenses: Array.isArray(raw.lenses) ? raw.lenses : ['ud'],
-    lockedQubits: Array.isArray(raw.lockedQubits) ? raw.lockedQubits : [],
+    lenses: Array.isArray(input.lenses) ? input.lenses : ['ud'],
+    lockedQubits: Array.isArray(input.lockedQubits) ? input.lockedQubits : [],
     start:
-      raw.start && typeof raw.start === 'object'
-        ? raw.start
+      input.start && typeof input.start === 'object'
+        ? input.start
         : { kind: 'zero', t: 0 },
-    phases: Array.isArray(raw.phases) ? raw.phases : ['alice'],
+    phases: Array.isArray(input.phases) ? input.phases : ['alice'],
     transit:
-      raw.transit && typeof raw.transit === 'object'
-        ? raw.transit
+      input.transit && typeof input.transit === 'object'
+        ? input.transit
         : { spy: false, road: null },
     target:
-      raw.target && typeof raw.target === 'object'
-        ? raw.target
+      input.target && typeof input.target === 'object'
+        ? input.target
         : { type: 'message', bits: '00' },
-    par: typeof raw.par === 'number' ? raw.par : 2,
-    goalLine: raw.goalLine || '',
-    hints: Array.isArray(raw.hints) ? raw.hints : [],
-    events: raw.events && typeof raw.events === 'object' ? raw.events : {},
-    extra: raw.extra && typeof raw.extra === 'object' ? raw.extra : {},
-    physicsCheck: raw.physicsCheck || null,
-    removePhysicsNote: raw.removePhysicsNote || '',
+    par: typeof input.par === 'number' ? input.par : 2,
+    goalLine: input.goalLine || '',
+    hints: Array.isArray(input.hints) ? input.hints : [],
+    events: input.events && typeof input.events === 'object' ? input.events : {},
+    extra: input.extra && typeof input.extra === 'object' ? input.extra : {},
+    physicsCheck: input.physicsCheck || null,
+    removePhysicsNote: input.removePhysicsNote || '',
   }
 }
 
