@@ -3,10 +3,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
+  zeroState,
   dialState,
   sureness,
   applyX,
   applyZ,
+  applyH,
   probabilities,
   probabilitiesSideways,
   maxDistinguishable,
@@ -298,6 +300,135 @@ describe('Level Solvability (Role 1 Levels)', () => {
       const threeArrows = [0, 120, 240]
       const res = checker(level8, {}, { arrows: threeArrows })
       expect(res.ok).toBe(false)
+    })
+  })
+
+  describe('Level 9: Lens-changer (src/levels/9.json)', () => {
+    const level9 = loadLevel(9)
+    const checker = targetCheckers[level9.target.type]
+
+    it('has a registered checker for target.type ("prediction")', () => {
+      expect(level9.target.type).toBe('prediction')
+      expect(typeof checker).toBe('function')
+      expect(level9.physicsCheck).toBe('check-09')
+      expect(level9.removePhysicsNote).toBe(
+        'If the lens-changer were purely random noise, pressing it twice could never restore certainty.'
+      )
+    })
+
+    it('computes truth from simulator: 1 press gives P(0)=0.5, 2 presses gives P(0)=1.0', () => {
+      // 1 press from |0>
+      const state1 = applyH(zeroState(), 'A')
+      const p1 = probabilities(state1, 'A')[0]
+      expect(p1).toBeCloseTo(0.5, 6)
+
+      // 2 presses from |0>
+      const state2 = applyH(state1, 'A')
+      const p2 = probabilities(state2, 'A')[0]
+      expect(p2).toBeCloseTo(1.0, 6)
+    })
+
+    it('asserts p=0.5 passes for one press', () => {
+      const level1Press = {
+        ...level9,
+        target: { ...level9.target, presses: 1 },
+      }
+      const res = checker(level1Press, {}, { p: 0.5 })
+      expect(res.ok).toBe(true)
+      expect(res.detail).toContain('within 0.1 of true probability')
+
+      const dispatchRes = checkTarget(level1Press.target.type, level1Press, {}, { p: 0.5 })
+      expect(dispatchRes.ok).toBe(true)
+    })
+
+    it('asserts p=0.95 passes for two presses', () => {
+      const level2Presses = {
+        ...level9,
+        target: { ...level9.target, presses: 2 },
+      }
+      const res = checker(level2Presses, {}, { p: 0.95 })
+      expect(res.ok).toBe(true)
+      expect(res.detail).toContain('within 0.1 of true probability')
+
+      const dispatchRes = checkTarget(level2Presses.target.type, level2Presses, {}, { p: 0.95 })
+      expect(dispatchRes.ok).toBe(true)
+    })
+
+    it('asserts failure-first: expecting two presses to be a coin flip again (p=0.5) fails for two presses', () => {
+      const level2Presses = {
+        ...level9,
+        target: { ...level9.target, presses: 2 },
+      }
+      const res = checker(level2Presses, {}, { p: 0.5 })
+      expect(res.ok).toBe(false)
+      expect(res.detail).toContain('too far from true probability')
+    })
+  })
+
+  describe('Level 11: Rewind (src/levels/11.json)', () => {
+    const level11 = loadLevel(11)
+    const checker = targetCheckers[level11.target.type]
+
+    it('has a registered checker for target.type ("state")', () => {
+      expect(level11.target.type).toBe('state')
+      expect(typeof checker).toBe('function')
+      expect(level11.target.state).toEqual([1, 0, 0, 0])
+      expect(level11.physicsCheck).toBe('check-11')
+      expect(level11.removePhysicsNote).toBe(
+        'Without reversibility, quantum operations could not be undone by running them in reverse.'
+      )
+    })
+
+    it('verifies the chain is non-palindromic so reverse order differs from forward order', () => {
+      const chain = level11.extra.chain
+      expect(chain).toEqual(['H', 'Z'])
+      expect(chain).not.toEqual([...chain].reverse())
+    })
+
+    it('simulates the machine chain [H, Z] applied to |0> and confirms reverse order passes', () => {
+      // Machine applied [H, Z] to |0>
+      const startZero = zeroState()
+      const afterH = applyH(startZero, 'A')
+      const machineState = applyZ(afterH, 'A') // Hidden parcel state: [1/sqrt2, 0, -1/sqrt2, 0]
+
+      // Winning solution: reverse order (Z then H)
+      const afterWinZ = applyZ(machineState, 'A')
+      const restoredState = applyH(afterWinZ, 'A') // Restores [1, 0, 0, 0] = |0>
+
+      const res = checker(level11, { state: restoredState }, {})
+      expect(res.ok).toBe(true)
+      expect(res.detail).toContain('State matches target')
+
+      const dispatchRes = checkTarget(level11.target.type, level11, { state: restoredState }, {})
+      expect(dispatchRes.ok).toBe(true)
+    })
+
+    it('verifies dial starting state t=270 from level JSON solves via reverse order (Z then H)', () => {
+      // In level11.json, start is { kind: "dial", t: 270 }
+      const startState = dialState(level11.start.t)
+
+      let s = applyZ(startState, 'A')
+      s = applyH(s, 'A')
+
+      const res = checker(level11, { state: s }, {})
+      expect(res.ok).toBe(true)
+    })
+
+    it('asserts failure-first: repeating the same order [H, Z] gives |1> and fails', () => {
+      // Machine state from [H, Z] on |0>
+      const machineState = applyZ(applyH(zeroState(), 'A'), 'A')
+
+      // Wrong attempt: applying H then Z again
+      const failedState = applyZ(applyH(machineState, 'A'), 'A')
+
+      // Failure-first discovery: gives |1> instead of restoring |0>
+      const probs = probabilities(failedState, 'A')
+      expect(probs[0]).toBeCloseTo(0.0, 6)
+      expect(probs[1]).toBeCloseTo(1.0, 6)
+
+      const res = checker(level11, { state: failedState }, {})
+      expect(res.ok).toBe(false)
+      expect(res.detail).toContain('State does not match target')
     })
   })
 })
