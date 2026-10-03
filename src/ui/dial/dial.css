@@ -293,6 +293,25 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+/* Bits Input */
+.dial-bits-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.75rem;
+  background: #0f172a;
+  border: 1px solid var(--dial-card-border);
+  border-radius: 8px;
+  color: var(--dial-text-main);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+}
+.dial-bits-input:focus {
+  outline: 2px solid var(--dial-focus-ring);
+  outline-offset: -1px;
+}
+
 /* Feedback & win message */
 .dial-feedback-box {
   border-radius: 8px;

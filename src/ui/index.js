@@ -351,7 +351,7 @@ export function mountUI(root, initialEngine) {
             </div>
           </div>
 
-          <p class="planner-rules" style="margin-bottom: 12px; font-size: 0.9em; opacity: 0.9;">A plain parcel delivers 1 bit. A parcel sent with a twin can deliver 2 bits. Each twin is used up once. A parcel carries bits of one message only.</p>
+          <p class="planner-rules" style="margin-bottom: 12px; font-size: 0.9em; opacity: 0.9;">A plain parcel delivers one classical fact (0 or 1). A parcel sent with a twin can deliver two. Each twin is used up. A parcel carries facts of one message only.</p>
 
           <div class="planner-messages" id="planner-messages">
           </div>
@@ -1316,6 +1316,10 @@ export function mountUI(root, initialEngine) {
     function renderLevel16(state) {
       if (els.level16Section) els.level16Section.hidden = false
       renderWinBanner(state)
+      if (state.status === "won") {
+        if (els.winTitle) els.winTitle.textContent = "Success!"
+        if (els.winDesc) els.winDesc.textContent = "You successfully completed the level."
+      }
 
       const extra = state.extra || {}
       const d = extra.delivery

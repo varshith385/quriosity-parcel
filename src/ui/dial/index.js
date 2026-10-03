@@ -162,6 +162,12 @@ export function mountDial(root, engine) {
           </div>
         </section>
 
+        <!-- Classical Bits Input (Level 2) -->
+        <div class="dial-bits-input-container" id="dial-bits-container" style="display: none; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <label for="dial-bits-input" style="font-size: 0.9rem; font-weight: 600;">Message to send:</label>
+          <input type="text" id="dial-bits-input" class="dial-bits-input" placeholder="e.g. 10" aria-label="Bits to send" />
+        </div>
+
         <!-- Check Submission & Reset Section -->
         <footer style="display: flex; gap: 0.75rem;">
           <button type="button" class="dial-btn dial-btn-primary" id="btn-submit" aria-label="Check solution">
@@ -210,6 +216,8 @@ export function mountDial(root, engine) {
   const btnLookSide = container.querySelector('#btn-look-side')
   const btnSubmit = container.querySelector('#btn-submit')
   const btnReset = container.querySelector('#btn-reset')
+  const bitsContainer = container.querySelector('#dial-bits-container')
+  const bitsInput = container.querySelector('#dial-bits-input')
 
   let isDraggingSlider = false
 
@@ -245,7 +253,11 @@ export function mountDial(root, engine) {
 
   btnSubmit.addEventListener('click', () => {
     if (typeof engine.submit === 'function') {
-      engine.submit({})
+      const payload = {}
+      if (bitsContainer && bitsContainer.style.display !== 'none' && bitsInput) {
+        payload.bits = bitsInput.value.trim()
+      }
+      engine.submit(payload)
     }
   })
 
@@ -346,6 +358,15 @@ export function mountDial(root, engine) {
         feedbackBox.style.display = 'block'
       } else {
         feedbackBox.style.display = 'none'
+      }
+    }
+
+    // 7. Classical Bits Input
+    if (bitsContainer) {
+      if (state.target && state.target.type === 'classical') {
+        bitsContainer.style.display = 'flex'
+      } else {
+        bitsContainer.style.display = 'none'
       }
     }
   }
