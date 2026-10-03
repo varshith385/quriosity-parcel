@@ -62,6 +62,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);
@@ -1171,6 +1175,177 @@ body {
   0%, 100% { transform: translateX(0); }
   20%, 60% { transform: translateX(-6px); }
   40%, 80% { transform: translateX(6px); }
+}
+
+/* ==========================================================================
+   MEASUREMENT CONTROLS (Level 13)
+   ========================================================================== */
+.measurement-section {
+  width: 100%;
+}
+
+.measurement-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lens-chooser {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.lens-label {
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.lens-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-text-muted);
+}
+
+.lens-radio-label:has(input:checked) {
+  color: var(--color-text-main);
+}
+
+.btn-read-twins {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #fff;
+  background: var(--color-alice-active);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  align-self: flex-start;
+}
+
+.btn-read-twins:hover {
+  background: #059669;
+}
+
+.btn-read-twins:active {
+  transform: translateY(2px);
+}
+
+.tally-display {
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  font-family: var(--font-mono);
+  color: #cbd5e1;
+  min-height: 4rem;
+}
+
+/* ==========================================================================
+   RECORD BOOK / TABLE UI (Levels 13 & 15)
+   ========================================================================== */
+.table-section {
+  width: 100%;
+}
+
+.table-container {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.table-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.table-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: var(--color-bg-base);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.table-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed var(--color-border-subtle);
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.row-label {
+  font-weight: 600;
+  color: var(--color-text-main);
+  font-size: 1rem;
+}
+
+.row-select {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-text-main);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-focus);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.row-select:focus {
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.4);
+}
+
+.table-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-submit {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #fff;
+  background: #3b82f6;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 2rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-submit:hover {
+  background: #2563eb;
+}
+
+.btn-submit:active {
+  transform: translateY(2px);
 }
 
 /* ==========================================================================
