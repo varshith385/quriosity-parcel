@@ -1,0 +1,53 @@
+{
+  "id": 17,
+  "act": 5,
+  "tier": 3,
+  "title": "The peek",
+  "mode": "post",
+  "newWords": [],
+  "tools": [
+    "lens",
+    "linker",
+    "unmake"
+  ],
+  "lenses": [
+    "ud"
+  ],
+  "lockedQubits": [],
+  "start": {
+    "kind": "pair",
+    "t": 0
+  },
+  "phases": [
+    "alice",
+    "transit",
+    "bob"
+  ],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "stream"
+  },
+  "par": 3,
+  "goalLine": "Receive the full two-bit message.",
+  "hints": [
+    {
+      "afterFailures": 2,
+      "text": "Wait for Alice's parcel before you look."
+    },
+    {
+      "afterFailures": 4,
+      "text": "Looking early breaks the link between the twins."
+    }
+  ],
+  "events": {},
+  "extra": {
+    "messages": [
+      "10"
+    ]
+  },
+  "physicsCheck": "check-04",
+  "removePhysicsNote": "Without the pair there is nothing to break by looking, so an early peek would cost nothing."
+}

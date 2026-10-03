@@ -1,0 +1,59 @@
+{
+  "id": 19,
+  "act": 5,
+  "tier": 4,
+  "title": "Rough road",
+  "mode": "post",
+  "newWords": [],
+  "tools": [
+    "flip",
+    "twist",
+    "lens",
+    "linker",
+    "unmake"
+  ],
+  "lenses": [
+    "ud"
+  ],
+  "lockedQubits": [
+    "B"
+  ],
+  "start": {
+    "kind": "pair",
+    "t": 0
+  },
+  "phases": [
+    "alice",
+    "transit",
+    "bob"
+  ],
+  "transit": {
+    "spy": false,
+    "road": "X"
+  },
+  "target": {
+    "type": "stream"
+  },
+  "par": 3,
+  "goalLine": "Get the message to arrive despite the road.",
+  "hints": [
+    {
+      "afterFailures": 3,
+      "text": "The road changes every parcel the same way."
+    },
+    {
+      "afterFailures": 5,
+      "text": "The road's change is just another move. Make it before sending."
+    }
+  ],
+  "events": {
+    "tool-blocked": "Bob's twin is locked."
+  },
+  "extra": {
+    "messages": [
+      "01"
+    ]
+  },
+  "physicsCheck": "check-02",
+  "removePhysicsNote": "Without the road, the parcel arrives as sent, so there would be nothing to correct."
+}
