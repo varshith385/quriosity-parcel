@@ -72,7 +72,12 @@ export function createEngine(options = {}) {
   let loadedLevels = options.levels
   if (!loadedLevels || loadedLevels.length === 0) {
     const fromLoader = loadLevels()
-    loadedLevels = fromLoader.length > 0 ? fromLoader : [normalizeLevel(testLevelFixture)]
+    if (fromLoader && fromLoader.length > 0) {
+      loadedLevels = fromLoader
+    } else {
+      console.info('No levels returned by loader; falling back to src/fixtures/test-level.json as the only level.')
+      loadedLevels = [normalizeLevel(testLevelFixture)]
+    }
   }
 
   const levels = loadedLevels
