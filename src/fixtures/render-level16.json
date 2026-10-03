@@ -9,7 +9,7 @@
   "phase": "bob",
   "state": [0.5, 0.5, 0.5, -0.5],
   "dial": null,
-  "toolsAvailable": ["lens", "linker", "unmake"],
+  "toolsAvailable": ["lens", "linker"],
   "lenses": ["ud"],
   "lockedQubits": [],
   "thread": true,
@@ -19,7 +19,7 @@
   "moveLog": [],
   "moveCount": 0,
   "failureCount": 0,
-  "par": 4,
+  "par": 8,
   "stars": 0,
   "extra": {
     "delivery": { "index": 0, "total": 4 },
