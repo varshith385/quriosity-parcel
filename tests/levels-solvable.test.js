@@ -2,7 +2,17 @@ import { describe, it, expect } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { dialState, sureness } from '../src/quantum/sim.js'
+import {
+  zeroState,
+  dialState,
+  sureness,
+  applyX,
+  applyZ,
+  applyH,
+  probabilities,
+  probabilitiesSideways,
+  maxDistinguishable,
+} from '../src/quantum/sim.js'
 import { targetCheckers, checkTarget } from '../src/engine/targets/index.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -124,6 +134,301 @@ describe('Level Solvability (Role 1 Levels)', () => {
       const res90 = checker(level5, { state: state90 }, {})
       expect(res90.ok).toBe(false)
       expect(res90.detail).toContain('is below target threshold')
+    })
+  })
+
+  describe('Level 7: Two moves (src/levels/7.json)', () => {
+    const level7 = loadLevel(7)
+    const checker = targetCheckers[level7.target.type]
+
+    it('has a registered checker for target.type ("readings")', () => {
+      expect(level7.target.type).toBe('readings')
+      expect(typeof checker).toBe('function')
+    })
+
+    it('asserts known winning solution gives ok: true computed purely from simulation (and wrong move leaves outcome unchanged)', () => {
+      const readings = level7.extra?.targetReadings || level7.target?.readings
+      expect(Array.isArray(readings)).toBe(true)
+      expect(readings.length).toBeGreaterThanOrEqual(2)
+
+      const simulatedAnswerReadings = []
+
+      for (const r of readings) {
+        // 1. Start from dialState(startT)
+        const startState = dialState(r.startT)
+
+        // Compute initial probabilities before moves:
+        const initProbs =
+          r.lens === 'side'
+            ? probabilitiesSideways(startState, 'A')
+            : probabilities(startState, 'A')
+        const unwantedOutcome = initProbs[0] > 0.99 ? 0 : 1
+        expect(unwantedOutcome).not.toBe(r.outcome)
+
+        // 2. Assert the WRONG move leaves the unwanted outcome unchanged:
+        // "twist in the ud lens, flip in the side lens"
+        if (r.lens === 'ud') {
+          const wrongState = applyZ(startState, 'A') // twist in ud lens
+          const wrongProbs = probabilities(wrongState, 'A')
+          expect(wrongProbs[unwantedOutcome]).toBeGreaterThanOrEqual(0.99)
+        } else if (r.lens === 'side') {
+          const wrongState = applyX(startState, 'A') // flip in side lens
+          const wrongProbs = probabilitiesSideways(wrongState, 'A')
+          expect(wrongProbs[unwantedOutcome]).toBeGreaterThanOrEqual(0.99)
+        }
+
+        // 3. Apply the listed moves with applyX/applyZ from sim.js
+        let finalState = startState
+        for (const move of r.moves) {
+          if (move === 'flip') finalState = applyX(finalState, 'A')
+          if (move === 'twist') finalState = applyZ(finalState, 'A')
+        }
+
+        // 4. Compute the outcome probability in the reading's lens (probabilities / probabilitiesSideways)
+        const finalProbs =
+          r.lens === 'side'
+            ? probabilitiesSideways(finalState, 'A')
+            : probabilities(finalState, 'A')
+
+        // 5. Assert it is at least 0.99 for the target outcome
+        expect(finalProbs[r.outcome]).toBeGreaterThanOrEqual(0.99)
+
+        // 6. Build the answer from the simulated outcomes (do not reuse target outcome)
+        const simulatedOutcome = finalProbs[1] >= 0.99 ? 1 : 0
+        simulatedAnswerReadings.push({
+          lens: r.lens,
+          outcome: simulatedOutcome,
+        })
+      }
+
+      // 7. Run simulated answer through the readings checker
+      const winAnswer = { readings: simulatedAnswerReadings }
+      const res = checker(level7, {}, winAnswer)
+      expect(res.ok).toBe(true)
+      expect(res.detail).toContain('matched successfully')
+
+      // Also verify through checkTarget dispatcher
+      const dispatchRes = checkTarget(level7.target.type, level7, {}, winAnswer)
+      expect(dispatchRes.ok).toBe(true)
+    })
+
+    it('asserts failure-first: applying wrong move (twist in ud, flip in side) leaves outcome unchanged and gives ok: false', () => {
+      const readings = level7.extra?.targetReadings || level7.target?.readings
+
+      // Construct an attempt where the wrong move was applied for reading 1 (twist instead of flip in ud lens)
+      const wrongReadings = readings.map((r, idx) => {
+        if (idx === 0) {
+          // Twist in ud leaves outcome 0 unchanged
+          const twistedState = applyZ(dialState(r.startT), 'A')
+          const probs = probabilities(twistedState, 'A')
+          const outcome = probs[0] > 0.99 ? 0 : 1
+          return { lens: r.lens, outcome }
+        }
+        // Other readings use simulated correct moves
+        let s = dialState(r.startT)
+        for (const m of r.moves) {
+          if (m === 'flip') s = applyX(s, 'A')
+          if (m === 'twist') s = applyZ(s, 'A')
+        }
+        const p = r.lens === 'side' ? probabilitiesSideways(s, 'A') : probabilities(s, 'A')
+        return { lens: r.lens, outcome: p[1] >= 0.99 ? 1 : 0 }
+      })
+
+      const failRes = checker(level7, {}, { readings: wrongReadings })
+      expect(failRes.ok).toBe(false)
+      expect(failRes.detail).toContain('Reading 1 mismatch')
+    })
+  })
+
+  describe('Level 8: Four won\'t fit (src/levels/8.json)', () => {
+    const level8 = loadLevel(8)
+    const checker = targetCheckers[level8.target.type]
+
+    it('has a registered checker for target.type ("distinguish")', () => {
+      expect(level8.target.type).toBe('distinguish')
+      expect(typeof checker).toBe('function')
+      expect(level8.extra.arrowCount).toBe(4)
+      expect(level8.extra.minArrows).toBe(2)
+      expect(level8.extra.maxArrows).toBe(4)
+      expect(level8.physicsCheck).toBe('check-08')
+      expect(level8.removePhysicsNote).toBe(
+        'If arrows other than opposite ones could be told apart, four messages would fit on one parcel. The angle rule allows only two.'
+      )
+    })
+
+    it('asserts known winning solution gives ok: true (exactly 2 mutually distinguishable arrows)', () => {
+      // 2 mutually distinguishable arrows 180 degrees apart
+      const winningArrows = [0, 180]
+      const count = maxDistinguishable(winningArrows)
+      expect(count).toBe(2)
+
+      const winAnswer = { arrows: winningArrows }
+      const res = checker(level8, {}, winAnswer)
+      expect(res.ok).toBe(true)
+      expect(res.detail).toContain('Successfully distinguished 2 pairwise orthogonal states')
+
+      const dispatchRes = checkTarget(level8.target.type, level8, {}, winAnswer)
+      expect(dispatchRes.ok).toBe(true)
+
+      // Another valid pair: [90, 270]
+      expect(checker(level8, {}, { arrows: [90, 270] }).ok).toBe(true)
+    })
+
+    it('asserts failure-first: spreading four arrows evenly (0, 90, 180, 270) gives ok: false', () => {
+      const fourArrows = [0, 90, 180, 270]
+      const count = maxDistinguishable(fourArrows)
+      expect(count).toBe(2)
+
+      const failAnswer = { arrows: fourArrows }
+      const res = checker(level8, {}, failAnswer)
+      expect(res.ok).toBe(false)
+      expect(res.detail).toContain('Reader confused')
+      expect(res.detail).toContain('submitted 4 arrows, but only 2 can be reliably distinguished')
+    })
+
+    it('asserts submitting 2 non-orthogonal arrows gives ok: false', () => {
+      const nonOrthoArrows = [0, 90]
+      const count = maxDistinguishable(nonOrthoArrows)
+      expect(count).toBe(1)
+
+      const res = checker(level8, {}, { arrows: nonOrthoArrows })
+      expect(res.ok).toBe(false)
+      expect(res.detail).toContain('Reader confused')
+    })
+
+    it('asserts submitting 3 arrows gives ok: false', () => {
+      const threeArrows = [0, 120, 240]
+      const res = checker(level8, {}, { arrows: threeArrows })
+      expect(res.ok).toBe(false)
+    })
+  })
+
+  describe('Level 9: Lens-changer (src/levels/9.json)', () => {
+    const level9 = loadLevel(9)
+    const checker = targetCheckers[level9.target.type]
+
+    it('has a registered checker for target.type ("prediction")', () => {
+      expect(level9.target.type).toBe('prediction')
+      expect(typeof checker).toBe('function')
+      expect(level9.physicsCheck).toBe('check-09')
+      expect(level9.removePhysicsNote).toBe(
+        'If the lens-changer were purely random noise, pressing it twice could never restore certainty.'
+      )
+    })
+
+    it('computes truth from simulator: 1 press gives P(0)=0.5, 2 presses gives P(0)=1.0', () => {
+      // 1 press from |0>
+      const state1 = applyH(zeroState(), 'A')
+      const p1 = probabilities(state1, 'A')[0]
+      expect(p1).toBeCloseTo(0.5, 6)
+
+      // 2 presses from |0>
+      const state2 = applyH(state1, 'A')
+      const p2 = probabilities(state2, 'A')[0]
+      expect(p2).toBeCloseTo(1.0, 6)
+    })
+
+    it('asserts p=0.5 passes for one press', () => {
+      const level1Press = {
+        ...level9,
+        target: { ...level9.target, presses: 1 },
+      }
+      const res = checker(level1Press, {}, { p: 0.5 })
+      expect(res.ok).toBe(true)
+      expect(res.detail).toContain('within 0.1 of true probability')
+
+      const dispatchRes = checkTarget(level1Press.target.type, level1Press, {}, { p: 0.5 })
+      expect(dispatchRes.ok).toBe(true)
+    })
+
+    it('asserts p=0.95 passes for two presses', () => {
+      const level2Presses = {
+        ...level9,
+        target: { ...level9.target, presses: 2 },
+      }
+      const res = checker(level2Presses, {}, { p: 0.95 })
+      expect(res.ok).toBe(true)
+      expect(res.detail).toContain('within 0.1 of true probability')
+
+      const dispatchRes = checkTarget(level2Presses.target.type, level2Presses, {}, { p: 0.95 })
+      expect(dispatchRes.ok).toBe(true)
+    })
+
+    it('asserts failure-first: expecting two presses to be a coin flip again (p=0.5) fails for two presses', () => {
+      const level2Presses = {
+        ...level9,
+        target: { ...level9.target, presses: 2 },
+      }
+      const res = checker(level2Presses, {}, { p: 0.5 })
+      expect(res.ok).toBe(false)
+      expect(res.detail).toContain('too far from true probability')
+    })
+  })
+
+  describe('Level 11: Rewind (src/levels/11.json)', () => {
+    const level11 = loadLevel(11)
+    const checker = targetCheckers[level11.target.type]
+
+    it('has a registered checker for target.type ("state")', () => {
+      expect(level11.target.type).toBe('state')
+      expect(typeof checker).toBe('function')
+      expect(level11.target.state).toEqual([1, 0, 0, 0])
+      expect(level11.physicsCheck).toBe('check-11')
+      expect(level11.removePhysicsNote).toBe(
+        'Without reversibility, quantum operations could not be undone by running them in reverse.'
+      )
+    })
+
+    it('verifies the chain is non-palindromic so reverse order differs from forward order', () => {
+      const chain = level11.extra.chain
+      expect(chain).toEqual(['H', 'Z'])
+      expect(chain).not.toEqual([...chain].reverse())
+    })
+
+    it('simulates the machine chain [H, Z] applied to |0> and confirms reverse order passes', () => {
+      // Machine applied [H, Z] to |0>
+      const startZero = zeroState()
+      const afterH = applyH(startZero, 'A')
+      const machineState = applyZ(afterH, 'A') // Hidden parcel state: [1/sqrt2, 0, -1/sqrt2, 0]
+
+      // Winning solution: reverse order (Z then H)
+      const afterWinZ = applyZ(machineState, 'A')
+      const restoredState = applyH(afterWinZ, 'A') // Restores [1, 0, 0, 0] = |0>
+
+      const res = checker(level11, { state: restoredState }, {})
+      expect(res.ok).toBe(true)
+      expect(res.detail).toContain('State matches target')
+
+      const dispatchRes = checkTarget(level11.target.type, level11, { state: restoredState }, {})
+      expect(dispatchRes.ok).toBe(true)
+    })
+
+    it('verifies dial starting state t=270 from level JSON solves via reverse order (Z then H)', () => {
+      // In level11.json, start is { kind: "dial", t: 270 }
+      const startState = dialState(level11.start.t)
+
+      let s = applyZ(startState, 'A')
+      s = applyH(s, 'A')
+
+      const res = checker(level11, { state: s }, {})
+      expect(res.ok).toBe(true)
+    })
+
+    it('asserts failure-first: repeating the same order [H, Z] gives |1> and fails', () => {
+      // Machine state from [H, Z] on |0>
+      const machineState = applyZ(applyH(zeroState(), 'A'), 'A')
+
+      // Wrong attempt: applying H then Z again
+      const failedState = applyZ(applyH(machineState, 'A'), 'A')
+
+      // Failure-first discovery: gives |1> instead of restoring |0>
+      const probs = probabilities(failedState, 'A')
+      expect(probs[0]).toBeCloseTo(0.0, 6)
+      expect(probs[1]).toBeCloseTo(1.0, 6)
+
+      const res = checker(level11, { state: failedState }, {})
+      expect(res.ok).toBe(false)
+      expect(res.detail).toContain('State does not match target')
     })
   })
 })

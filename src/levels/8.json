@@ -1,0 +1,50 @@
+{
+  "id": 8,
+  "act": 2,
+  "tier": 2,
+  "title": "Four won't fit",
+  "mode": "dial",
+  "newWords": [],
+  "tools": [],
+  "lenses": [
+    "ud",
+    "side"
+  ],
+  "lockedQubits": [],
+  "start": {
+    "kind": "dial",
+    "t": 0
+  },
+  "phases": [
+    "alice"
+  ],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "distinguish"
+  },
+  "par": 1,
+  "goalLine": "Find the largest set of arrows that can be reliably told apart.",
+  "hints": [
+    {
+      "afterFailures": 2,
+      "text": "Arrows must be 180 degrees apart to be told apart reliably."
+    },
+    {
+      "afterFailures": 4,
+      "text": "One look gives one answer: at most 2 arrows can be completely distinguished."
+    }
+  ],
+  "events": {
+    "reader-confused": "Four arrows cannot fit without confusing the reader."
+  },
+  "extra": {
+    "arrowCount": 4,
+    "minArrows": 2,
+    "maxArrows": 4
+  },
+  "physicsCheck": "check-08",
+  "removePhysicsNote": "If arrows other than opposite ones could be told apart, four messages would fit on one parcel. The angle rule allows only two."
+}

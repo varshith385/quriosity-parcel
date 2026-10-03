@@ -2,6 +2,9 @@
  * src/engine/targets/message.js - Role 1 Core Target Checker
  * Target type: "message" (Level 14)
  * Pure function: check(level, context, answer) -> { ok, detail }
+ * Validates quantum state pair facts against target message bits:
+ *   Bit 1 = 1 when pairFacts.xx is "differ" (and 0 when "agree")
+ *   Bit 2 = 1 when pairFacts.zz is "differ" (and 0 when "agree")
  */
 
 import { pairFacts } from '../../quantum/sim.js'
@@ -16,29 +19,21 @@ export function check(level, context, answer) {
     return { ok: false, detail: 'missing level.target.bits' }
   }
 
+  const facts = pairFacts(context.state)
+  if (facts.xx === 'unsure' || facts.zz === 'unsure') {
+    return {
+      ok: false,
+      detail: `Pair facts are unsure: XX=${facts.xx}, ZZ=${facts.zz}`,
+    }
+  }
+
   // ROLES.md Standard:
-  // Bit 1 = twist = shape = XX light
-  // Bit 2 = flip = colour = ZZ light
+  // Bit 1 = 1 when XX is "differ" (0 when "agree")
+  // Bit 2 = 1 when ZZ is "differ" (0 when "agree")
   const expectedXX = expectedBits[0] === '1' ? 'differ' : 'agree'
   const expectedZZ = expectedBits[1] === '1' ? 'differ' : 'agree'
 
-  // Alternative bit ordering (bit 1 = flip = ZZ, bit 2 = twist = XX)
-  const altXX = expectedBits[1] === '1' ? 'differ' : 'agree'
-  const altZZ = expectedBits[0] === '1' ? 'differ' : 'agree'
-
-  const facts = pairFacts(context.state)
-
-  const isPhysicsMatch =
-    (facts.xx === expectedXX && facts.zz === expectedZZ) ||
-    (facts.xx === altXX && facts.zz === altZZ)
-
-  // Compatibility for engine test harness (where engine.test.js tests stars/progress mechanics on testLevelFixture)
-  const isEngineTestFallback =
-    context.moveCount !== undefined &&
-    level?.id === 14 &&
-    context.moveCount > 0
-
-  if (isPhysicsMatch || isEngineTestFallback) {
+  if (facts.xx === expectedXX && facts.zz === expectedZZ) {
     return {
       ok: true,
       detail: `Lights match target message "${expectedBits}" (XX: ${facts.xx}, ZZ: ${facts.zz})`,

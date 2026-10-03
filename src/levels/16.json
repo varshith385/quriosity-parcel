@@ -9,8 +9,7 @@
   ],
   "tools": [
     "lens",
-    "linker",
-    "unmake"
+    "linker"
   ],
   "lenses": [
     "ud"
@@ -30,7 +29,7 @@
   "target": {
     "type": "stream"
   },
-  "par": 4,
+  "par": 8,
   "goalLine": "Turn each delivery into its two bits.",
   "hints": [
     {

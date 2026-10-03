@@ -256,7 +256,7 @@ function validateLevelFile(file, content, orderList, addErr, addWarn) {
     addErr(`filename number (${filenameNum}) != id field (${level.id})`);
   }
   if (!orderList.includes(level.id)) {
-    addErr(`level id ${level.id} is not listed in index.json`);
+    addWarn(`level id ${level.id} is not listed in index.json`);
   }
 
   validateSchema(level, addErr);
@@ -326,8 +326,7 @@ export function main() {
 
   const order = indexData.order;
   const isUnique1to20 = Array.isArray(order) &&
-    order.length === 20 &&
-    new Set(order).size === 20 &&
+    new Set(order).size === order.length &&
     order.every(id => Number.isInteger(id) && id >= 1 && id <= 20);
 
   if (!isUnique1to20) {

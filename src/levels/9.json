@@ -1,0 +1,53 @@
+{
+  "id": 9,
+  "act": 3,
+  "tier": 2,
+  "title": "Lens-changer",
+  "mode": "dial",
+  "newWords": [
+    "lens-changer"
+  ],
+  "tools": [
+    "lens"
+  ],
+  "lenses": [
+    "ud",
+    "side"
+  ],
+  "lockedQubits": [],
+  "start": {
+    "kind": "zero",
+    "t": 0
+  },
+  "phases": [
+    "alice"
+  ],
+  "transit": {
+    "spy": false,
+    "road": null
+  },
+  "target": {
+    "type": "prediction",
+    "presses": 2
+  },
+  "par": 1,
+  "goalLine": "Predict the up-down tally after using the lens-changer twice.",
+  "hints": [
+    {
+      "afterFailures": 2,
+      "text": "The lens-changer turns certainty into an even split, but pressing it again reverses the effect."
+    },
+    {
+      "afterFailures": 4,
+      "text": "Two presses of the lens-changer return the parcel back to its starting state."
+    }
+  ],
+  "events": {
+    "coin-flip-mistake": "Expecting two presses to be a coin flip again forgets that the tool is self-reversing."
+  },
+  "extra": {
+    "presses": 2
+  },
+  "physicsCheck": "check-09",
+  "removePhysicsNote": "If the lens-changer were purely random noise, pressing it twice could never restore certainty."
+}

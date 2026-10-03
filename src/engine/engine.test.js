@@ -44,6 +44,7 @@ describe('Game Engine (src/engine/index.js)', () => {
       'feedback',
       'score',
       'progress',
+      'levels',
     ]
 
     expect(Object.keys(state)).toHaveLength(expectedKeys.length)
@@ -119,7 +120,7 @@ describe('Game Engine (src/engine/index.js)', () => {
     // par is 2 in testLevelFixture
     // Case 1: moveCount <= par (1 move <= 2 par) -> 3 stars
     const engine1 = createEngine({ levels: [normalizeLevel(testLevelFixture)] })
-    engine1.applyTool('flip', 'A')
+    engine1.applyTool('twist', 'A')
     expect(engine1.getRenderState().moveCount).toBe(1)
     engine1.submit()
     expect(engine1.getRenderState().status).toBe('won')
@@ -127,9 +128,9 @@ describe('Game Engine (src/engine/index.js)', () => {
 
     // Case 2: moveCount <= par * 2 (3 moves <= 4) -> 2 stars
     const engine2 = createEngine({ levels: [normalizeLevel(testLevelFixture)] })
-    engine2.applyTool('flip', 'A')
-    engine2.applyTool('flip', 'A')
-    engine2.applyTool('flip', 'A')
+    engine2.applyTool('twist', 'A')
+    engine2.applyTool('twist', 'A')
+    engine2.applyTool('twist', 'A')
     expect(engine2.getRenderState().moveCount).toBe(3)
     engine2.submit()
     expect(engine2.getRenderState().status).toBe('won')
@@ -292,7 +293,7 @@ describe('Game Engine (src/engine/index.js)', () => {
       })
 
       const engine = createEngine({ levels: [normalizeLevel(testLevelFixture)] })
-      engine.applyTool('flip', 'A')
+      engine.applyTool('twist', 'A')
 
       expect(() => {
         engine.submit()
