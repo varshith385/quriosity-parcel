@@ -32,6 +32,9 @@
   --color-twist: #818cf8;
   --color-twist-bg: rgba(129, 140, 248, 0.12);
   
+  --color-lens: #ec4899;
+  --color-linker: #a855f7;
+
   --color-thread: #06b6d4;
   --color-thread-glow: rgba(6, 182, 212, 0.5);
 
@@ -892,6 +895,52 @@ body {
   transform: translateY(1px);
 }
 
+/* LENS-CHANGER: Hexagonal-like feel, pink border, 'H' icon */
+.btn-lens {
+  border: 2px solid var(--color-lens);
+  border-radius: var(--radius-sm);
+  background: #251421;
+}
+
+.btn-lens .lens-icon {
+  font-size: 1.2rem;
+  color: var(--color-lens);
+}
+
+.btn-lens:hover {
+  background: #3c1e34;
+  border-color: #f472b6;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-lens:active {
+  transform: translateY(1px);
+}
+
+/* LINKER: Interlocking shape feel, purple border, link icon */
+.btn-linker {
+  border: 2px inset var(--color-linker);
+  border-radius: var(--radius-sm);
+  background: #1d112b;
+}
+
+.btn-linker .linker-icon {
+  font-size: 1.2rem;
+  color: var(--color-linker);
+}
+
+.btn-linker:hover {
+  background: #2e1b45;
+  border-color: #c084fc;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-linker:active {
+  transform: translateY(1px);
+}
+
 /* ==========================================================================
    DISTINCT ANIMATIONS FOR FLIP & TWIST
    ========================================================================== */
@@ -916,6 +965,28 @@ body {
   30% { transform: rotate(-22deg) scale(1.06); border-color: var(--color-twist); }
   70% { transform: rotate(22deg) scale(1.06); border-color: var(--color-twist); }
   100% { transform: rotate(0deg); }
+}
+
+/* Lens = pulse scale to indicate state transition */
+.anim-lens {
+  animation: cardLensAction 0.4s ease-in-out;
+}
+
+@keyframes cardLensAction {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.9); filter: hue-rotate(90deg); border-color: var(--color-lens); }
+  100% { transform: scale(1); filter: hue-rotate(0deg); }
+}
+
+/* Linker = slide toward middle to indicate linking attempt */
+.anim-linker {
+  animation: cardLinkerAction 0.4s ease-in-out;
+}
+
+@keyframes cardLinkerAction {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(10px) scale(1.05); border-color: var(--color-linker); }
+  100% { transform: translateX(0); }
 }
 
 /* ==========================================================================
@@ -1013,6 +1084,12 @@ body {
   background: #450a0a;
   color: #fca5a5;
   border: 1px solid #dc2626;
+}
+
+.status-inactive {
+  background: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #475569;
 }
 
 .graphic-locked {

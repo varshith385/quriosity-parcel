@@ -351,6 +351,7 @@ export function mountUI(root, engine) {
     bobStatusText: container.querySelector("#bob-status-text"),
     bobLockIcon: container.querySelector("#bob-lock-icon"),
     bobStatusPill: container.querySelector("#bob-status-pill"),
+    bobGraphic: container.querySelector("#bob-parcel-graphic"),
     bobLockScrim: container.querySelector("#bob-lock-scrim"),
     bobLockBanner: container.querySelector("#bob-lock-banner"),
     bobLockReason: container.querySelector("#bob-lock-reason"),
@@ -451,6 +452,25 @@ export function mountUI(root, engine) {
     if (els.bobLockIcon) els.bobLockIcon.textContent = isLocked ? "🔒" : "⏱"
     if (els.bobStatusPill) els.bobStatusPill.className = isLocked ? "twin-status-pill status-locked" : "twin-status-pill status-inactive"
     if (els.bobLockScrim) els.bobLockScrim.hidden = !isLocked
+    
+    if (els.cardBob) {
+      if (isLocked) {
+        els.cardBob.classList.add("locked-card")
+        els.cardBob.setAttribute("aria-label", "Bob's Twin Parcel (Locked)")
+      } else {
+        els.cardBob.classList.remove("locked-card")
+        els.cardBob.setAttribute("aria-label", "Bob's Twin Parcel (Fresh)")
+      }
+    }
+
+    if (els.bobGraphic) {
+      if (isLocked) {
+        els.bobGraphic.classList.add("graphic-locked")
+      } else {
+        els.bobGraphic.classList.remove("graphic-locked")
+      }
+    }
+
     if (els.bobBody) {
       if (isLocked) {
         els.bobBody.classList.add("muted-body")
