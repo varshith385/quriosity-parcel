@@ -13,7 +13,7 @@ export function createFakeEngine(initialOverrides = {}) {
     goalLine: levelId === 12 ? "Produce two linked parcels." : (levelId === 13 ? "Read the twins and complete the fact table." : (levelId === 15 ? "Map each move to its light pattern." : (levelId === 20 ? "Plan a sequence to deliver the messages within budget." : "Make the lights match the target message."))),
     mode: levelId === 20 ? "post" : "pair",
     tier: 1,
-    newWords: levelId === 12 ? ["lens-changer", "linker", "entanglement"] : ["flip", "twist"],
+    newWords: levelId === 12 ? ["lens-changer", "linker"] : ["flip", "twist"],
     target: (levelId === 12 || levelId === 13 || levelId === 15) ? null : (levelId === 20 ? { type: "budget" } : { type: "message", bits: "10" }),
     phase: "alice",
     state: levelId === 12 ? [1, 0, 0, 0] : [1 / Math.SQRT2, 0, 0, 1 / Math.SQRT2],
@@ -54,8 +54,8 @@ export function createFakeEngine(initialOverrides = {}) {
   } else if (levelId === 15) {
     state.extra.codebook = [
       { id: "I", label: "Nothing" },
-      { id: "X", label: "Flip (X)" },
-      { id: "Z", label: "Twist (Z)" },
+      { id: "X", label: "Flip" },
+      { id: "Z", label: "Twist" },
       { id: "XZ", label: "Twist then Flip" }
     ]
     state.lenses = ["ud"]
@@ -129,8 +129,6 @@ export function createFakeEngine(initialOverrides = {}) {
             // Apply CNOT: swaps state[2] and state[3]
             state.state = [1 / Math.SQRT2, 0, 0, 1 / Math.SQRT2]
             state.thread = true
-            state.status = "won"
-            state.stars = state.moveCount <= state.par ? 3 : 2
             state.feedback = { kind: "info", text: "Linker applied! The thread appears. Twins created!" }
           } else {
             state.feedback = { kind: "hint", text: "Linker applied, but nothing happened. State stayed |00>." }
@@ -148,12 +146,12 @@ export function createFakeEngine(initialOverrides = {}) {
           if (nextZz === "differ") {
             state.feedback = {
               kind: "info",
-              text: "Flip (X) applied to Alice's twin: Colour light changed to DIFFER (Bit 2 = 1)."
+              text: "Flip applied to Alice's twin: Colour light changed to DIFFER (Bit 2 = 1)."
             }
           } else {
             state.feedback = {
               kind: "info",
-              text: "Flip (X) applied again: Colour light returned to AGREE (Bit 2 = 0)."
+              text: "Flip applied again: Colour light returned to AGREE (Bit 2 = 0)."
             }
           }
         } else if (name === "twist") {
@@ -166,12 +164,12 @@ export function createFakeEngine(initialOverrides = {}) {
           if (nextXx === "differ") {
             state.feedback = {
               kind: "info",
-              text: "Twist (Z) applied to Alice's twin: Shape light changed to DIFFER (Bit 1 = 1)."
+              text: "Twist applied to Alice's twin: Shape light changed to DIFFER (Bit 1 = 1)."
             }
           } else {
             state.feedback = {
               kind: "info",
-              text: "Twist (Z) applied again: Shape light returned to AGREE (Bit 1 = 0)."
+              text: "Twist applied again: Shape light returned to AGREE (Bit 1 = 0)."
             }
           }
         }
@@ -183,8 +181,6 @@ export function createFakeEngine(initialOverrides = {}) {
 
         if (state.target && state.target.bits) {
           if (currentBits === state.target.bits) {
-            state.status = "won"
-            state.stars = state.moveCount <= state.par ? 3 : (state.moveCount <= state.par * 2 ? 2 : 1)
             state.feedback = {
               kind: "info",
               text: `Target ${state.target.bits} reached! Shape differs (1), Colour agrees (0). Message encoded!`
@@ -240,6 +236,25 @@ export function createFakeEngine(initialOverrides = {}) {
           twinsLeft: 3 - answer.plan.filter(r => r.useTwin).length
         }
         state.feedback = { kind: "info", text: "Plan executed successfully!" }
+      }
+    } else if (state.levelId === 12) {
+      if (state.state && state.state[0] === 1 / Math.SQRT2 && state.state[3] === 1 / Math.SQRT2) {
+        state.status = "won"
+        state.stars = state.moveCount <= state.par ? 3 : 2
+      } else {
+        state.failureCount = (state.failureCount || 0) + 1
+        state.feedback = { kind: "hint", text: "Not yet. Try again." }
+      }
+    } else if (state.levelId === 14) {
+      const bit1 = state.lights.xx === "differ" ? "1" : "0"
+      const bit2 = state.lights.zz === "differ" ? "1" : "0"
+      const currentBits = `${bit1}${bit2}`
+      if (state.target && currentBits === state.target.bits) {
+        state.status = "won"
+        state.stars = state.moveCount <= state.par ? 3 : (state.moveCount <= state.par * 2 ? 2 : 1)
+      } else {
+        state.failureCount = (state.failureCount || 0) + 1
+        state.feedback = { kind: "hint", text: "Not yet. Try again." }
       }
     }
     notify()
